@@ -269,17 +269,6 @@ describe("resolveElements", () => {
 			expect(resolved[0].captions).toBeUndefined();
 		});
 
-		it("drops captions on a clip they are switched off for", () => {
-			const off = {
-				...makeElement("nar1", "narration"),
-				layoutAttributes: { captions: "false" },
-			};
-			const resolved = resolveElements([wrap([off])], withTimestamps, {
-				captionsEnabled: true,
-			});
-			expect(resolved[0].captions).toBeUndefined();
-		});
-
 		const heard = [
 			{ text: "one", start: 0, end: 1 },
 			{ text: "two", start: 2, end: 3 },

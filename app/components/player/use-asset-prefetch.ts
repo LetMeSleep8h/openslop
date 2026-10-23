@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import type { prefetch as PrefetchFn } from "remotion";
-import { layoutSequences } from "@/lib/render/scene-builder";
 import type { RenderLayout } from "@/lib/render/types";
 import { toastError } from "@/lib/toast-error";
 
@@ -16,7 +15,11 @@ const loadPrefetch = () =>
 		}));
 
 export function collectUrls(layout: RenderLayout): Set<string> {
-	return new Set(layoutSequences(layout).map(({ element }) => element.url));
+	const urls = new Set<string>();
+	for (const { element } of layout.series) urls.add(element.url);
+	for (const list of Object.values(layout.sequences))
+		if (list) for (const { element } of list) urls.add(element.url);
+	return urls;
 }
 
 /**

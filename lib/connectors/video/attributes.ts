@@ -1,6 +1,5 @@
 import { AttributeSchema } from "../attributes/schema";
 import {
-	captionsDef,
 	durationDef,
 	loopDef,
 	motionDef,
@@ -27,5 +26,4 @@ export const videoAttributesFor = (model: ModelRef) =>
 		motionDef,
 		trimStartDef,
 		timelineDurationDef,
-		captionsDef,
 	]);

@@ -5,7 +5,6 @@ import { useSlateStatic } from "slate-react";
 import { Button } from "@/components/ui/button";
 import { Sparkles } from "@/components/ui/icon";
 import { getCanvasElements } from "@/lib/canvas/assets";
-import { showsCaptions } from "@/lib/canvas/element-attributes";
 import { captionSource } from "@/lib/canvas/types";
 import { plural } from "@/lib/format";
 import { generatedById } from "@/lib/generation/generation-graph";
@@ -32,9 +31,7 @@ export function CaptionAllButton() {
 			.map(({ element }) => element)
 			.filter(({ type }) => captionSource(type) === "transcript")
 			.map(({ id }) => id);
-		return [...new Set(ids)]
-			.flatMap((id) => generatedById(canvas, id) ?? [])
-			.filter(showsCaptions);
+		return [...new Set(ids)].flatMap((id) => generatedById(canvas, id) ?? []);
 	}, [editor, layout]);
 	const scope = useCaptionsScope(useCallback(() => transcribed, [transcribed]));
 

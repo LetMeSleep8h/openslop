@@ -1,6 +1,5 @@
 import { AttributeSchema } from "../attributes/schema";
 import {
-	captionsDef,
 	timelineDurationDef,
 	trimStartDef,
 	volumeDef,
@@ -29,7 +28,6 @@ export const TTS_ATTRIBUTES = AttributeSchema.from(
 		volumeDef("10"),
 		trimStartDef,
 		timelineDurationDef,
-		captionsDef,
 	],
 	{ hideModel: true },
 );

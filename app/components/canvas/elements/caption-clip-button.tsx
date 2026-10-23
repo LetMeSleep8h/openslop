@@ -1,12 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { showsCaptions } from "@/lib/canvas/element-attributes";
-import {
-	isGenerated,
-	type ContentElement,
-	type GeneratedElement,
-} from "@/lib/canvas/types";
+import type { ContentElement } from "@/lib/canvas/types";
 import { isGenerationActive } from "@/lib/generation/snapshots";
 import { useClipCaptions } from "../hooks/use-clip-captions";
 import { useElementGeneration } from "./element-generation-context";
@@ -22,11 +17,14 @@ function captionLabel(
 	return hasResult ? "Recaption" : "Caption";
 }
 
-function CaptionButton({ element }: { element: GeneratedElement }) {
+/** Transcribing is a paid generation, so it sits with Generate, and only while the clip's captions are missing, out of date or failed. */
+export function CaptionClipButton({ element }: { element: ContentElement }) {
+	const { hasResult: clipReady } = useElementGeneration();
 	const { status, error, hasResult, staleReason, generate } =
 		useClipCaptions(element);
 	const active = isGenerationActive(status);
-	if (hasResult && !staleReason && !error && !active) return null;
+	if (!clipReady || (hasResult && !staleReason && !error && !active))
+		return null;
 
 	return (
 		<Button
@@ -47,12 +45,4 @@ function CaptionButton({ element }: { element: GeneratedElement }) {
 			{captionLabel(active, error, hasResult)}
 		</Button>
 	);
-}
-
-/** Transcribing is a paid generation, so it sits with Generate, and only while this clip's captions are on and missing or out of date. */
-export function CaptionClipButton({ element }: { element: ContentElement }) {
-	const { hasResult } = useElementGeneration();
-	if (!hasResult || !isGenerated(element) || !showsCaptions(element))
-		return null;
-	return <CaptionButton element={element} />;
 }

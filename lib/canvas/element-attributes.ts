@@ -7,7 +7,6 @@ import {
 	LOOPS_OPTIONS,
 	VOLUME_OPTIONS,
 	isToggleOn,
-	TOGGLE_OFF,
 	type ContentElement,
 	type SplitAttributes,
 } from "./types";
@@ -28,7 +27,6 @@ export const LAYOUT_ATTRIBUTE_KEYS = [
 	"uploadedFrame",
 	"trimStart",
 	"timelineDuration",
-	"captions",
 ] as const;
 
 export const splitAttributes = (
@@ -95,10 +93,6 @@ export function getLoops(element: ContentElement): number {
 
 export const getLoop = (element: ContentElement): boolean =>
 	isToggleOn(element.layoutAttributes?.loop);
-
-export const showsCaptions = (
-	element: Pick<ContentElement, "layoutAttributes">,
-): boolean => element.layoutAttributes?.captions !== TOGGLE_OFF;
 
 export const getTrimStart = (element: ContentElement): number =>
 	clampedNumber(element.layoutAttributes?.trimStart, { min: 0 }) ?? 0;

@@ -1,6 +1,5 @@
 import { AttributeSchema } from "../attributes/schema";
 import {
-	captionsDef,
 	loopsDef,
 	timelineDurationDef,
 	trimStartDef,
@@ -12,5 +11,4 @@ export const MUSIC_ATTRIBUTES = AttributeSchema.from([
 	volumeDef("2"),
 	trimStartDef,
 	timelineDurationDef,
-	captionsDef,
 ]);
