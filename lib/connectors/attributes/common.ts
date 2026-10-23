@@ -74,6 +74,12 @@ export const loopDef: AttributeDef = {
 	default: TOGGLE_ON,
 };
 
+export const captionsDef: AttributeDef = {
+	key: "captions",
+	label: "Captions",
+	hidden: true,
+};
+
 export const trimStartDef: AttributeDef = {
 	key: "trimStart",
 	label: "Trim start",

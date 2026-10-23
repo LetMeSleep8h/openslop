@@ -24,6 +24,7 @@ export function useClipCaptions(element: GeneratedElement) {
 	return {
 		status: snapshot.status,
 		error: snapshot.error,
+		hasResult: Boolean(snapshot.result),
 		staleReason: reason,
 		generate,
 	};

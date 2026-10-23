@@ -29,7 +29,7 @@ export function ElementStaleIndicator() {
 	return <StaleIndicator reason={staleReason} />;
 }
 
-const GENERATE_ICON: Record<GenerationStatus, ReactNode> = {
+export const GENERATE_ICON: Record<GenerationStatus, ReactNode> = {
 	generating: <Spinner className="text-current" />,
 	queued: <Hourglass aria-hidden="true" />,
 	idle: <Sparkles aria-hidden="true" />,

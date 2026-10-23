@@ -15,6 +15,7 @@ import {
 	getLoops,
 	getMotion,
 	getVolume,
+	showsCaptions,
 } from "../canvas/element-attributes";
 import { elementTrim, trimTimestamps } from "./clip-trim";
 
@@ -82,9 +83,10 @@ export function resolveElements(
 				loop: getLoop(element),
 				volume: getVolume(element),
 				motion: getMotion(element),
-				captions: captionsEnabled
-					? resolveCaptions(element, getSnapshot, trim.trimStartSec)
-					: undefined,
+				captions:
+					captionsEnabled && showsCaptions(element)
+						? resolveCaptions(element, getSnapshot, trim.trimStartSec)
+						: undefined,
 			});
 		}
 	}
