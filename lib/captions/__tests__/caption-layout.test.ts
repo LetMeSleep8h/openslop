@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { activeWordIndex, captionWordsAt } from "../caption-layout";
+import {
+	activeWordIndex,
+	captionLineAt,
+	captionLines,
+	captionWordsAt,
+} from "../caption-layout";
 
 const WORDS = ["one", "two", "three", "four", "five"];
 const text = (words: { text: string }[]) => words.map((w) => w.text);
@@ -67,5 +72,50 @@ describe("captionWordsAt", () => {
 			reveal: "line",
 		});
 		expect(text(words)).toEqual(["four"]);
+	});
+});
+
+describe("captionLineAt", () => {
+	it("spans the run of words the index sits in", () => {
+		expect(captionLineAt(10, 4, 3)).toEqual({ start: 3, end: 6 });
+	});
+
+	it("ends the last line at the last word", () => {
+		expect(captionLineAt(7, 6, 3)).toEqual({ start: 6, end: 7 });
+	});
+});
+
+describe("captionLineAt with typed lines", () => {
+	const ids = [7, 7, 7, 7, 7, undefined, undefined, undefined, undefined, 9, 9];
+
+	it("keeps a typed line whole, however long", () => {
+		expect(captionLineAt(ids.length, 2, 3, ids)).toEqual({ start: 0, end: 5 });
+	});
+
+	it("counts fixed-size lines from the end of the typed line before", () => {
+		expect(captionLineAt(ids.length, 5, 3, ids)).toEqual({ start: 5, end: 8 });
+		expect(captionLineAt(ids.length, 8, 3, ids)).toEqual({ start: 8, end: 9 });
+	});
+
+	it("ends untouched lines where the next typed line starts", () => {
+		expect(captionLineAt(ids.length, 10, 3, ids)).toEqual({
+			start: 9,
+			end: 11,
+		});
+	});
+});
+
+describe("captionLines", () => {
+	it("splits every word into lines, keeping typed lines whole", () => {
+		const ids = [7, 7, 7, 7, undefined, undefined, undefined];
+		expect(captionLines(ids.length, 2, ids)).toEqual([
+			{ start: 0, end: 4 },
+			{ start: 4, end: 6 },
+			{ start: 6, end: 7 },
+		]);
+	});
+
+	it("has no lines without words", () => {
+		expect(captionLines(0, 3)).toEqual([]);
 	});
 });

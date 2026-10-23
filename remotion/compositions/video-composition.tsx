@@ -10,7 +10,11 @@ import {
 	useVideoConfig,
 } from "remotion";
 import { linearTiming, TransitionSeries } from "@remotion/transitions";
-import type { RenderLayout, ResolvedElement } from "@/lib/render/types";
+import type {
+	RenderLayout,
+	ResolvedElement,
+	Sequence as LayoutSequence,
+} from "@/lib/render/types";
 import { playedSec } from "@/lib/render/clip-trim";
 import { toFrames } from "@/lib/render/frames";
 import {
@@ -38,10 +42,27 @@ const blackBg: React.CSSProperties = { backgroundColor: "black" };
 
 const fallbackHtml5AudioProps = { crossOrigin: "anonymous" } as const;
 
-function AudioSequence({
+/** Captions run for the clip's span, short of the tail the next scene's transition steals. */
+function CaptionsTrack({
 	element,
 	transitionDurationSec,
+	captionsYieldSec,
 }: SequenceContentProps) {
+	const { durationInFrames, fps } = useVideoConfig();
+	if (!element.captions) return null;
+	return (
+		<Sequence
+			durationInFrames={Math.max(
+				1,
+				durationInFrames - toFrames(transitionDurationSec, fps),
+			)}
+		>
+			<Captions captions={element.captions} yieldSec={captionsYieldSec} />
+		</Sequence>
+	);
+}
+
+function AudioSequence({ element }: { element: ResolvedElement }) {
 	const { durationInFrames, fps } = useVideoConfig();
 	const gain = volumeToGain(element.volume);
 	const fadeFrames = toFrames(audioFadeSec(element), fps);
@@ -51,24 +72,12 @@ function AudioSequence({
 		[gain, envelopeFrames, fadeFrames],
 	);
 	return (
-		<>
-			<Audio
-				src={element.url}
-				trimBefore={toFrames(element.trimStartSec, fps)}
-				volume={volume}
-				fallbackHtml5AudioProps={fallbackHtml5AudioProps}
-			/>
-			{element.captionTimestamps && (
-				<Sequence
-					durationInFrames={Math.max(
-						1,
-						durationInFrames - toFrames(transitionDurationSec, fps),
-					)}
-				>
-					<Captions timestamps={element.captionTimestamps} />
-				</Sequence>
-			)}
-		</>
+		<Audio
+			src={element.url}
+			trimBefore={toFrames(element.trimStartSec, fps)}
+			volume={volume}
+			fallbackHtml5AudioProps={fallbackHtml5AudioProps}
+		/>
 	);
 }
 
@@ -104,12 +113,10 @@ type SequenceContentProps = {
 	element: ResolvedElement;
 	/** The overlap the next scene steals from this one's tail; 0 on a cut. */
 	transitionDurationSec: number;
+	captionsYieldSec: LayoutSequence["captionsYieldSec"];
 };
 
-function SequenceContent({
-	element,
-	transitionDurationSec,
-}: SequenceContentProps) {
+function ElementMedia({ element }: { element: ResolvedElement }) {
 	switch (element.layer) {
 		case "visual":
 			return (
@@ -122,13 +129,17 @@ function SequenceContent({
 				</MotionLayer>
 			);
 		case "audio":
-			return (
-				<AudioSequence
-					element={element}
-					transitionDurationSec={transitionDurationSec}
-				/>
-			);
+			return <AudioSequence element={element} />;
 	}
+}
+
+function SequenceContent(props: SequenceContentProps) {
+	return (
+		<>
+			<ElementMedia element={props.element} />
+			<CaptionsTrack {...props} />
+		</>
+	);
 }
 
 export const VideoComposition: React.FC<RenderLayout> = ({
@@ -154,7 +165,7 @@ export const VideoComposition: React.FC<RenderLayout> = ({
 	);
 	const transitionSeriesNodes = useMemo(
 		() =>
-			series.map(({ element, duration }, index) => (
+			series.map(({ element, duration, captionsYieldSec }, index) => (
 				<Fragment key={element.id}>
 					{index > 0 && transitionFrames > 0 && (
 						<TransitionSeries.Transition
@@ -169,6 +180,7 @@ export const VideoComposition: React.FC<RenderLayout> = ({
 						<SequenceContent
 							element={element}
 							transitionDurationSec={transitionDurationSec}
+							captionsYieldSec={captionsYieldSec}
 						/>
 					</TransitionSeries.Sequence>
 				</Fragment>
@@ -185,19 +197,22 @@ export const VideoComposition: React.FC<RenderLayout> = ({
 	const layeredSequenceNodes = useMemo(
 		() =>
 			Object.entries(sequences).flatMap(([type, sequencesOfType]) =>
-				(sequencesOfType ?? []).map(({ element, start, duration }, index) => (
-					<Sequence
-						key={`${type}-${element.id}-${index}`}
-						from={toFrames(start, fps)}
-						durationInFrames={toFrames(duration, fps)}
-						premountFor={toFrames(LAYER_PREMOUNT_SEC, fps)}
-					>
-						<SequenceContent
-							element={element}
-							transitionDurationSec={transitionDurationSec}
-						/>
-					</Sequence>
-				)),
+				(sequencesOfType ?? []).map(
+					({ element, start, duration, captionsYieldSec }, index) => (
+						<Sequence
+							key={`${type}-${element.id}-${index}`}
+							from={toFrames(start, fps)}
+							durationInFrames={toFrames(duration, fps)}
+							premountFor={toFrames(LAYER_PREMOUNT_SEC, fps)}
+						>
+							<SequenceContent
+								element={element}
+								transitionDurationSec={transitionDurationSec}
+								captionsYieldSec={captionsYieldSec}
+							/>
+						</Sequence>
+					),
+				),
 			),
 		[fps, sequences, transitionDurationSec],
 	);

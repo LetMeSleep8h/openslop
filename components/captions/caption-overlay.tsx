@@ -1,4 +1,4 @@
-import type { CSSProperties } from "react";
+import type { ComponentPropsWithoutRef, CSSProperties, ReactNode } from "react";
 import type { CaptionWord } from "@/lib/captions/caption-layout";
 import { captionFontStack } from "@/lib/captions/caption-fonts";
 import {
@@ -45,7 +45,7 @@ function outline(width: number, color: string): CSSProperties {
 	};
 }
 
-function wordStyle(style: CaptionTextStyle): CSSProperties {
+export function captionWordStyle(style: CaptionTextStyle): CSSProperties {
 	return {
 		color: style.fill,
 		fontWeight: style.bold ? 700 : 400,
@@ -73,10 +73,14 @@ export function CaptionOverlay({
 	style,
 	words,
 	fontSizePx,
+	lineProps,
+	children,
 }: {
 	style: CaptionStyle;
 	words: readonly CaptionWord[];
 	fontSizePx: number;
+	lineProps?: ComponentPropsWithoutRef<"div">;
+	children?: ReactNode;
 }) {
 	if (words.length === 0) return null;
 
@@ -94,6 +98,7 @@ export function CaptionOverlay({
 			}}
 		>
 			<div
+				{...lineProps}
 				style={{
 					display: "flex",
 					flexWrap: "wrap",
@@ -111,18 +116,21 @@ export function CaptionOverlay({
 					textTransform: TRANSFORM[style.casing],
 				}}
 			>
-				{words.map((word, i) => (
-					<span
-						// Words repeat within a line, so the position is the identity.
-						key={i}
-						style={{
-							...wordStyle(word.active ? style.activeWord : style.base),
-							visibility: word.hidden ? "hidden" : "visible",
-						}}
-					>
-						{word.text}
-					</span>
-				))}
+				{children ??
+					words.map((word, i) => (
+						<span
+							// Words repeat within a line, so the position is the identity.
+							key={i}
+							style={{
+								...captionWordStyle(
+									word.active ? style.activeWord : style.base,
+								),
+								visibility: word.hidden ? "hidden" : "visible",
+							}}
+						>
+							{word.text}
+						</span>
+					))}
 			</div>
 		</div>
 	);

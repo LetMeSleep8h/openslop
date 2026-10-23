@@ -41,7 +41,8 @@ export const PROVIDER_CATALOG: Record<typeof MANAGED_PROVIDER, ProviderMeta> &
 	},
 	cartesia: {
 		name: "Cartesia",
-		description: "Low-latency speech with a large searchable voice library.",
+		description:
+			"Low-latency speech and transcripts, with a large searchable voice library.",
 		mark: { src: "/icons/cartesia.svg", masked: true },
 		keysUrl: "https://play.cartesia.ai/keys",
 	},

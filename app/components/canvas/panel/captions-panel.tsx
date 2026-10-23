@@ -27,6 +27,7 @@ import { useCaptionStyle } from "@/lib/captions/use-caption-style";
 import { useProject } from "@/lib/project/use-project";
 import { useVideoSetting } from "@/lib/project/use-video-setting";
 import { CaptionFontLibrary } from "../caption-fonts";
+import { CaptionAllButton } from "./caption-all-button";
 import { CaptionFontField } from "./caption-font-field";
 import { CaptionPresetGrid } from "./caption-preset-grid";
 import { CaptionPreview } from "./caption-preview";
@@ -63,7 +64,10 @@ export function CaptionsPanel() {
 
 	return (
 		<>
-			<PanelCard title="Captions">
+			<PanelCard
+				title="Captions"
+				action={captionsEnabled && <CaptionAllButton />}
+			>
 				<PanelField label="Show">
 					<MediaToggle
 						value={captionsEnabled ? "on" : "off"}

@@ -127,6 +127,26 @@ export class GenerationQueue {
 		});
 	}
 
+	/** An edit answers to the inputs of the result it edits, so it goes stale with it. Never while a run would land over it. */
+	reviseResult(
+		elementId: string,
+		revise: (result: AssetResult) => AssetResult,
+	): void {
+		const { result, resultInputs, connectorType, pinned } =
+			this.snapshots.get(elementId);
+		if (!result || !resultInputs || !connectorType)
+			throw new Error(`Element "${elementId}" holds no result to edit`);
+		if (this.snapshots.isActive(elementId))
+			throw new Error(`Element "${elementId}" is generating`);
+		this.commit({
+			elementId,
+			connectorType,
+			inputs: resultInputs,
+			result: revise(result),
+			pinned,
+		});
+	}
+
 	restoreResult({
 		elementId,
 		inputs,

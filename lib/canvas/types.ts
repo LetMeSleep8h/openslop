@@ -11,12 +11,16 @@ export type ElementRole = "foreground" | "background" | "overlay" | "effect";
 
 export type LayerType = "audio" | "visual";
 
+/** Where a clip's caption words come from: its own speech, or a transcript of its sound. */
+export type CaptionSource = "voice" | "transcript";
+
 /** The presentation-free facts about a content type. Its look lives in the canvas's `elementConfigs`. */
 export type ContentSpec = {
 	connector: AssetConnectorType;
 	outputKind: ResultKind;
 	role: ElementRole;
 	layer: LayerType;
+	captions?: CaptionSource;
 };
 
 export const CONTENT_TYPES = {
@@ -25,12 +29,14 @@ export const CONTENT_TYPES = {
 		outputKind: "audio",
 		role: "overlay",
 		layer: "audio",
+		captions: "voice",
 	},
 	character: {
 		connector: "tts",
 		outputKind: "audio",
 		role: "overlay",
 		layer: "audio",
+		captions: "voice",
 	},
 	image: {
 		connector: "image",
@@ -43,6 +49,7 @@ export const CONTENT_TYPES = {
 		outputKind: "video",
 		role: "foreground",
 		layer: "visual",
+		captions: "transcript",
 	},
 	sound: {
 		connector: "sfx",
@@ -55,6 +62,7 @@ export const CONTENT_TYPES = {
 		outputKind: "audio",
 		role: "background",
 		layer: "audio",
+		captions: "transcript",
 	},
 } as const satisfies Record<string, ContentSpec>;
 

@@ -4,10 +4,15 @@ import { createCharacterAvatarPlugin } from "./image/plugins/character-avatar";
 import { createReferenceImagesPlugin } from "./image/plugins/reference-images";
 import { createDimensionsPlugin } from "./plugins/dimensions";
 import { buildVisualPlugins } from "./plugins/visual-chain";
+import { createClipSoundPlugin } from "./transcript/plugins/clip-sound";
 import { createSpeakerVoicePlugin } from "./tts/plugins/speaker-voice";
 import { createVideoOutputRulesPlugin } from "./video/plugins/output-rules";
 import { createPreviousVisualPlugin } from "./video/plugins/previous-visual";
-import type { ConnectorConfig } from "./types";
+import type {
+	AssetConnectorType,
+	ConnectorConfig,
+	ConnectorType,
+} from "./types";
 
 /** The plugins each generated type installs: all a type does that another does not. */
 export type ConnectorRegistry = Record<GeneratedType, ConnectorConfig>;
@@ -37,3 +42,20 @@ export const DEFAULT_CONNECTOR_REGISTRY: ConnectorRegistry = {
 	},
 	asset_voice: {},
 };
+
+/** A job run off an element's own result instead of a prompt, held apart from the element's. */
+export type DerivedJob = ConnectorConfig & {
+	connector: AssetConnectorType;
+	/** Runs on whichever provider this type's pick is on, so no one picks it twice. */
+	providerOf: ConnectorType;
+};
+
+export const DERIVED_JOBS = {
+	captions: {
+		connector: "transcript",
+		providerOf: "tts",
+		plugins: [createClipSoundPlugin()],
+	},
+} satisfies Record<string, DerivedJob>;
+
+export type DerivedKind = keyof typeof DERIVED_JOBS;

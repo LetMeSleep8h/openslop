@@ -4,6 +4,14 @@ import type { CaptionStyle } from "../captions/caption-style";
 import type { MotionEffect } from "./motion-effect-names";
 import type { TransitionType } from "./transitions";
 
+/** The words a clip shows, from its trim start, and the node whose result holds them. */
+export type ResolvedCaptions = {
+	ownerId: string;
+	/** Where `words` start in the owner's own word list, past those the trim cut. */
+	firstWord: number;
+	words: TextTimestamp[];
+};
+
 export type ResolvedElement = {
 	id: string;
 	type: ContentType;
@@ -23,7 +31,7 @@ export type ResolvedElement = {
 	loop: boolean;
 	volume: number;
 	motion: MotionEffect;
-	captionTimestamps?: TextTimestamp[];
+	captions?: ResolvedCaptions;
 };
 
 export type Sequence = {
@@ -32,6 +40,8 @@ export type Sequence = {
 	duration: number;
 	/** A scene says how long the overlays under it run; it holds at least that long. */
 	overlaySec?: number;
+	/** Spans, from the sequence's start, where a clip that outranks it shows its captions instead. */
+	captionsYieldSec?: [number, number][];
 };
 
 export type RenderLayout = {

@@ -14,6 +14,7 @@ const DEFAULT_CONCURRENCY_LIMITS: ConcurrencyLimits = {
 	voice: 1,
 	music: 1,
 	sfx: 1,
+	transcript: 1,
 };
 
 export const resolveConcurrencyLimits = (

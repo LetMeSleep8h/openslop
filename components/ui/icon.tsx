@@ -71,6 +71,7 @@ export const Forbidden = icon("forbidden");
 export const Freeze = icon("freeze");
 export const Music = icon("music");
 export const Proportions = icon("aspect-ratio");
+export const Captions = icon("captions");
 export const Check = icon("check");
 export const CheckCircle = icon("check-circle");
 export const ChevronDown = icon("chevron-down");

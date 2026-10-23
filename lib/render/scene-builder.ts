@@ -8,6 +8,7 @@ import {
 import { ASPECT_RATIO_DIMENSIONS } from "../project/aspect-ratio";
 import type { VideoSettings } from "../project/video-settings";
 import { blankScene } from "./blank-scene";
+import { captionYields } from "./caption-yields";
 import { loopStrideSec } from "./audio-fade";
 import { toFrames, toSeconds } from "./frames";
 import { transitionOverlapSec } from "./transitions";
@@ -33,6 +34,14 @@ function createSequence(
 }
 
 type SequenceMap = RenderLayout["sequences"];
+
+export const layoutSequences = ({
+	series,
+	sequences,
+}: Pick<RenderLayout, "series" | "sequences">): Sequence[] => [
+	...series,
+	...Object.values(sequences).flatMap((list) => list ?? []),
+];
 
 type SceneSequence = Sequence & { overlaySec: number };
 
@@ -154,6 +163,14 @@ export function buildRenderLayout(
 		if (start + sequence.duration > totalDurationSec) {
 			sequence.duration = Math.max(MIN_DURATION_SEC, totalDurationSec - start);
 		}
+	}
+
+	const captioned = layoutSequences({ series, sequences }).filter(
+		(sequence) => sequence.element.captions,
+	);
+	for (const sequence of captioned) {
+		const yields = captionYields(sequence, captioned);
+		if (yields.length > 0) sequence.captionsYieldSec = yields;
 	}
 
 	return {

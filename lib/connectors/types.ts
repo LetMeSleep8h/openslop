@@ -16,6 +16,7 @@ export const ASSET_CONNECTOR_TYPES = [
 	"tts",
 	"video",
 	"voice",
+	"transcript",
 ] as const;
 
 export type AssetConnectorType = (typeof ASSET_CONNECTOR_TYPES)[number];
@@ -64,6 +65,7 @@ export type ModelEntries = {
 	video: VisualModelEntry;
 	sfx: ModelEntry;
 	music: ModelEntry;
+	transcript: ModelEntry;
 };
 
 export type ModelTable = Record<string, ModelEntry>;
@@ -133,6 +135,8 @@ export const TextTimestampSchema = z.object({
 	text: z.string(),
 	start: z.number(),
 	end: z.number(),
+	/** Words typed as one caption line share an id, and stay one line. */
+	line: z.number().optional(),
 });
 
 export type TextTimestamp = z.infer<typeof TextTimestampSchema>;
@@ -214,6 +218,20 @@ export type TTSGenerateParams = ConnectorGenerateParams & {
 	speed?: TTSSpeed;
 	emotion?: TTSEmotion;
 	format?: string;
+};
+
+/** The media to transcribe, found by a plugin. */
+export type TranscriptGenerateParams = ConnectorGenerateParams & {
+	mediaUrl?: string;
+};
+
+export type SourcedTranscriptParams = TranscriptGenerateParams & {
+	mediaUrl: string;
+};
+
+export type TranscriptResult = {
+	durationSec: number;
+	textTimestamps: TextTimestamp[];
 };
 
 /** A TTS request after its speaker's voice is resolved. */

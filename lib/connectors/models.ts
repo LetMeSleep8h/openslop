@@ -4,6 +4,10 @@ import { DEFAULT_LLM_MODEL, LLM_MODELS } from "./llm/models";
 import { DEFAULT_MUSIC_MODEL, MUSIC_MODELS } from "./music/models";
 import { isProvider } from "./provider-catalog";
 import { DEFAULT_SFX_MODEL, SFX_MODELS } from "./sfx/models";
+import {
+	DEFAULT_TRANSCRIPT_MODEL,
+	TRANSCRIPT_MODELS,
+} from "./transcript/models";
 import { DEFAULT_TTS_MODEL, TTS_MODELS } from "./tts/models";
 import {
 	CONNECTOR_TYPES,
@@ -37,6 +41,7 @@ export const MODELS: {
 	video: VIDEO_MODELS,
 	sfx: SFX_MODELS,
 	music: MUSIC_MODELS,
+	transcript: TRANSCRIPT_MODELS,
 };
 
 export const DEFAULT_MODELS: Record<ConnectorType, ModelRef> = {
@@ -47,6 +52,7 @@ export const DEFAULT_MODELS: Record<ConnectorType, ModelRef> = {
 	video: DEFAULT_VIDEO_MODEL,
 	sfx: DEFAULT_SFX_MODEL,
 	music: DEFAULT_MUSIC_MODEL,
+	transcript: DEFAULT_TRANSCRIPT_MODEL,
 };
 
 export const hasModel = (
@@ -104,6 +110,16 @@ export function resolveModel(
 ): ModelRef {
 	const { provider, model } =
 		candidates.find((pick) => hasModel(type, pick)) ?? DEFAULT_MODELS[type];
+	return { provider, model };
+}
+
+/** What `provider` runs `type` on; every provider of a type a derived job follows must offer one. */
+export function providerModel(
+	type: ConnectorType,
+	provider: Provider,
+): ModelRef {
+	const [model] = Object.keys(MODELS[type][provider] ?? {});
+	if (!model) throw new Error(`"${provider}" has no ${type} model`);
 	return { provider, model };
 }
 

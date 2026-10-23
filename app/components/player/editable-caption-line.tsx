@@ -1,0 +1,108 @@
+"use client";
+
+import { useRef, useState } from "react";
+import type { CaptionLineProps } from "@/components/captions/caption-line";
+import {
+	CaptionOverlay,
+	captionWordStyle,
+} from "@/components/captions/caption-overlay";
+import { reviseCaptions } from "@/lib/captions/revise-words";
+import { isGenerationActive } from "@/lib/generation/snapshots";
+import {
+	useGenerationQueue,
+	useQueueSelector,
+} from "@/lib/generation/generation-queue-provider";
+import { usePlayerPlaying } from "./use-player-state";
+
+const LINE_CLASS =
+	"pointer-events-auto rounded-[0.12em] outline-solid outline-0 outline-offset-[0.1em] outline-ring";
+
+/** A paused line opens for editing on a click, and saves to whichever node holds its words. It stays shut while that node regenerates. */
+function EditableCaptionLine({
+	style,
+	words,
+	fontSizePx,
+	ownerId,
+	from,
+	to,
+}: CaptionLineProps) {
+	const playing = usePlayerPlaying();
+	const queue = useGenerationQueue();
+	const regenerating = useQueueSelector((q) =>
+		isGenerationActive(q.getElementSnapshot(ownerId).status),
+	);
+	const [draft, setDraft] = useState<string | null>(null);
+	const cancelled = useRef(false);
+	const overlay = { style, words, fontSizePx };
+
+	if (playing || regenerating) return <CaptionOverlay {...overlay} />;
+
+	const text = words.map((word) => word.text).join(" ");
+
+	const open = () => {
+		cancelled.current = false;
+		setDraft(text);
+	};
+
+	const save = (value: string) => {
+		setDraft(null);
+		if (cancelled.current || value.trim() === text) return;
+		queue.reviseResult(ownerId, (result) =>
+			reviseCaptions(result, from, to, value),
+		);
+	};
+
+	if (draft === null)
+		return (
+			<CaptionOverlay
+				{...overlay}
+				lineProps={{
+					role: "button",
+					tabIndex: 0,
+					"aria-label": `Edit caption: ${text}`,
+					className: `${LINE_CLASS} cursor-text hover:outline-[0.06em] focus-visible:outline-[0.06em]`,
+					onClick: open,
+					onKeyDown: (event) => {
+						if (event.key !== "Enter" && event.key !== " ") return;
+						event.preventDefault();
+						open();
+					},
+				}}
+			/>
+		);
+
+	return (
+		<CaptionOverlay
+			{...overlay}
+			lineProps={{ className: `${LINE_CLASS} outline-[0.06em]` }}
+		>
+			<input
+				autoFocus
+				aria-label="Caption"
+				name="caption"
+				autoComplete="off"
+				value={draft}
+				onChange={(event) => setDraft(event.target.value)}
+				onBlur={() => save(draft)}
+				onKeyDown={(event) => {
+					if (event.key === "Escape") cancelled.current = true;
+					if (event.key === "Enter" || event.key === "Escape")
+						event.currentTarget.blur();
+				}}
+				style={{
+					font: "inherit",
+					...captionWordStyle(style.base),
+					fieldSizing: "content",
+					border: "none",
+					outline: "none",
+					textAlign: "inherit",
+					textTransform: "inherit",
+				}}
+			/>
+		</CaptionOverlay>
+	);
+}
+
+export const renderEditableCaptionLine = (props: CaptionLineProps) => (
+	<EditableCaptionLine {...props} />
+);

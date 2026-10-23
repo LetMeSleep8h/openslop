@@ -9,9 +9,16 @@ import {
 	type GeneratedElement,
 	type CanvasElement,
 } from "@/lib/canvas/types";
+import { providerModel, resolveModel } from "@/lib/connectors/models";
+import { DERIVED_JOBS, type DerivedKind } from "@/lib/connectors/registry";
 import type { ConnectorPlugin } from "@/lib/connectors/types";
 import { getPromptText } from "./inputs";
-import type { BuildContext, GenerationNode, NodeId } from "./graph";
+import {
+	derivedNodeId,
+	type BuildContext,
+	type GenerationNode,
+	type NodeId,
+} from "./graph";
 
 export const generatedById = (canvas: CanvasElement[], id: string) =>
 	canvas.find(
@@ -37,6 +44,30 @@ export const pluginRecords = <K extends keyof Declared>(
 	return pickBy(Object.assign({}, ...records));
 };
 
+const nodeId = (element: GeneratedElement, kind?: DerivedKind): NodeId =>
+	kind ? derivedNodeId(element.id, kind) : element.id;
+
+/** An element's node runs on its own prompt and connector; a derived one reads the element and takes no prompt. */
+function nodeSource(
+	element: GeneratedElement,
+	ctx: BuildContext,
+	kind?: DerivedKind,
+) {
+	if (!kind)
+		return {
+			prompt: getPromptText(element),
+			attributes: element.generationAttributes ?? {},
+			connector: resolveElementConnector(element, ctx.registry, ctx.canvas),
+		};
+	const { connector: type, providerOf, ...config } = DERIVED_JOBS[kind];
+	const { provider } = resolveModel(providerOf, ctx.models[providerOf]);
+	return {
+		prompt: "",
+		attributes: {},
+		connector: { type, model: providerModel(type, provider), config },
+	};
+}
+
 /** `job` is not compared: it is how a node runs, not what it reads. */
 const isUnchanged = (before: GenerationNode, after: GenerationNode) =>
 	shallow(before.dependsOn, after.dependsOn) &&
@@ -54,12 +85,16 @@ export class GenerationGraph {
 		this.previousNodes = previous?.nodes ?? new Map();
 	}
 
-	resolve = (element: GeneratedElement): GenerationNode =>
-		this.nodes.get(element.id) ??
-		this.build(generatedById(this.ctx.canvas, element.id) ?? element);
+	/** The element's own node, or with `kind` the job derived from it. */
+	resolve(element: GeneratedElement, kind?: DerivedKind): GenerationNode {
+		return (
+			this.nodes.get(nodeId(element, kind)) ??
+			this.build(generatedById(this.ctx.canvas, element.id) ?? element, kind)
+		);
+	}
 
-	private build(element: GeneratedElement): GenerationNode {
-		const { id } = element;
+	private build(element: GeneratedElement, kind?: DerivedKind): GenerationNode {
+		const id = nodeId(element, kind);
 		const cached = this.nodes.get(id);
 		if (cached) return cached;
 		if (this.visiting.has(id))
@@ -67,14 +102,17 @@ export class GenerationGraph {
 		this.visiting.add(id);
 
 		try {
-			const { registry, canvas } = this.ctx;
-			const connector = resolveElementConnector(element, registry, canvas);
+			const { prompt, attributes, connector } = nodeSource(
+				element,
+				this.ctx,
+				kind,
+			);
 			const plugins = connector.config.plugins ?? [];
 			return this.intern({
 				id,
 				inputs: {
-					prompt: getPromptText(element),
-					attributes: element.generationAttributes ?? {},
+					prompt,
+					attributes,
 					reads: pluginRecords(plugins, "reads", element, this.ctx),
 				},
 				dependsOn: this.dependenciesOf(element, plugins),
@@ -126,4 +164,8 @@ export const buildNode = (
 export const buildNodes = (
 	elements: GeneratedElement[],
 	ctx: BuildContext,
-): GenerationNode[] => elements.map(new GenerationGraph(ctx).resolve);
+	kind?: DerivedKind,
+): GenerationNode[] => {
+	const graph = new GenerationGraph(ctx);
+	return elements.map((element) => graph.resolve(element, kind));
+};
