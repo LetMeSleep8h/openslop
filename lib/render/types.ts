@@ -10,6 +10,8 @@ export type ResolvedCaptions = {
 	/** Where `words` start in the owner's own word list, past those the trim cut. */
 	firstWord: number;
 	words: TextTimestamp[];
+	/** Spans, from the clip's start, where a clip that outranks it shows its captions instead. */
+	yieldSec?: [number, number][];
 };
 
 export type ResolvedElement = {
@@ -40,8 +42,6 @@ export type Sequence = {
 	duration: number;
 	/** A scene says how long the overlays under it run; it holds at least that long. */
 	overlaySec?: number;
-	/** Spans, from the sequence's start, where a clip that outranks it shows its captions instead. */
-	captionsYieldSec?: [number, number][];
 };
 
 export type RenderLayout = {

@@ -10,11 +10,7 @@ import {
 	useVideoConfig,
 } from "remotion";
 import { linearTiming, TransitionSeries } from "@remotion/transitions";
-import type {
-	RenderLayout,
-	ResolvedElement,
-	Sequence as LayoutSequence,
-} from "@/lib/render/types";
+import type { RenderLayout, ResolvedElement } from "@/lib/render/types";
 import { playedSec } from "@/lib/render/clip-trim";
 import { toFrames } from "@/lib/render/frames";
 import {
@@ -46,7 +42,6 @@ const fallbackHtml5AudioProps = { crossOrigin: "anonymous" } as const;
 function CaptionsTrack({
 	element,
 	transitionDurationSec,
-	captionsYieldSec,
 }: SequenceContentProps) {
 	const { durationInFrames, fps } = useVideoConfig();
 	if (!element.captions) return null;
@@ -57,7 +52,7 @@ function CaptionsTrack({
 				durationInFrames - toFrames(transitionDurationSec, fps),
 			)}
 		>
-			<Captions captions={element.captions} yieldSec={captionsYieldSec} />
+			<Captions captions={element.captions} />
 		</Sequence>
 	);
 }
@@ -113,7 +108,6 @@ type SequenceContentProps = {
 	element: ResolvedElement;
 	/** The overlap the next scene steals from this one's tail; 0 on a cut. */
 	transitionDurationSec: number;
-	captionsYieldSec: LayoutSequence["captionsYieldSec"];
 };
 
 function ElementMedia({ element }: { element: ResolvedElement }) {
@@ -165,7 +159,7 @@ export const VideoComposition: React.FC<RenderLayout> = ({
 	);
 	const transitionSeriesNodes = useMemo(
 		() =>
-			series.map(({ element, duration, captionsYieldSec }, index) => (
+			series.map(({ element, duration }, index) => (
 				<Fragment key={element.id}>
 					{index > 0 && transitionFrames > 0 && (
 						<TransitionSeries.Transition
@@ -180,7 +174,6 @@ export const VideoComposition: React.FC<RenderLayout> = ({
 						<SequenceContent
 							element={element}
 							transitionDurationSec={transitionDurationSec}
-							captionsYieldSec={captionsYieldSec}
 						/>
 					</TransitionSeries.Sequence>
 				</Fragment>
@@ -197,22 +190,19 @@ export const VideoComposition: React.FC<RenderLayout> = ({
 	const layeredSequenceNodes = useMemo(
 		() =>
 			Object.entries(sequences).flatMap(([type, sequencesOfType]) =>
-				(sequencesOfType ?? []).map(
-					({ element, start, duration, captionsYieldSec }, index) => (
-						<Sequence
-							key={`${type}-${element.id}-${index}`}
-							from={toFrames(start, fps)}
-							durationInFrames={toFrames(duration, fps)}
-							premountFor={toFrames(LAYER_PREMOUNT_SEC, fps)}
-						>
-							<SequenceContent
-								element={element}
-								transitionDurationSec={transitionDurationSec}
-								captionsYieldSec={captionsYieldSec}
-							/>
-						</Sequence>
-					),
-				),
+				(sequencesOfType ?? []).map(({ element, start, duration }, index) => (
+					<Sequence
+						key={`${type}-${element.id}-${index}`}
+						from={toFrames(start, fps)}
+						durationInFrames={toFrames(duration, fps)}
+						premountFor={toFrames(LAYER_PREMOUNT_SEC, fps)}
+					>
+						<SequenceContent
+							element={element}
+							transitionDurationSec={transitionDurationSec}
+						/>
+					</Sequence>
+				)),
 			),
 		[fps, sequences, transitionDurationSec],
 	);

@@ -169,8 +169,13 @@ export function buildRenderLayout(
 		(sequence) => sequence.element.captions,
 	);
 	for (const sequence of captioned) {
-		const yields = captionYields(sequence, captioned);
-		if (yields.length > 0) sequence.captionsYieldSec = yields;
+		const { captions } = sequence.element;
+		const yieldSec = captionYields(sequence, captioned);
+		if (captions && yieldSec.length > 0)
+			sequence.element = {
+				...sequence.element,
+				captions: { ...captions, yieldSec },
+			};
 	}
 
 	return {

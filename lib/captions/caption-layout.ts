@@ -67,18 +67,3 @@ export function wordsOnLine(
 		hidden: reveal === "word" && index > activeInLine,
 	}));
 }
-
-/** Every line in play order, as word ranges. */
-export function captionLines(
-	wordCount: number,
-	maxWordsPerLine: number,
-	lineIds: readonly (number | undefined)[] = [],
-): { start: number; end: number }[] {
-	const lines = [];
-	for (let start = 0; start < wordCount; ) {
-		const line = captionLineAt(wordCount, start, maxWordsPerLine, lineIds);
-		lines.push(line);
-		start = line.end;
-	}
-	return lines;
-}

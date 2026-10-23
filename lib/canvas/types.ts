@@ -68,6 +68,11 @@ export const CONTENT_TYPES = {
 
 export type ContentType = keyof typeof CONTENT_TYPES;
 
+export function captionSource(type: ContentType): CaptionSource | undefined {
+	const spec: ContentSpec = CONTENT_TYPES[type];
+	return spec.captions;
+}
+
 const ALL_CONTENT_TYPES = Object.keys(CONTENT_TYPES) as ContentType[];
 
 export const ContentTypeSchema = z.enum(

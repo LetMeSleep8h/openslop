@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import {
 	activeWordIndex,
 	captionLineAt,
-	captionLines,
 	captionWordsAt,
 } from "../caption-layout";
 
@@ -102,20 +101,5 @@ describe("captionLineAt with typed lines", () => {
 			start: 9,
 			end: 11,
 		});
-	});
-});
-
-describe("captionLines", () => {
-	it("splits every word into lines, keeping typed lines whole", () => {
-		const ids = [7, 7, 7, 7, undefined, undefined, undefined];
-		expect(captionLines(ids.length, 2, ids)).toEqual([
-			{ start: 0, end: 4 },
-			{ start: 4, end: 6 },
-			{ start: 6, end: 7 },
-		]);
-	});
-
-	it("has no lines without words", () => {
-		expect(captionLines(0, 3)).toEqual([]);
 	});
 });

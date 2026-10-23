@@ -1,8 +1,8 @@
 import {
 	CONTENT_TYPES,
+	captionSource,
 	type CanvasBlock,
 	type ContentElement,
-	type ContentSpec,
 } from "@/lib/canvas/types";
 import { isScene } from "@/lib/canvas/scenes";
 import { getPromptText } from "@/lib/generation/inputs";
@@ -25,9 +25,9 @@ function captionsOwnerId({
 	id,
 	type,
 }: Pick<ContentElement, "id" | "type">): string | undefined {
-	const spec: ContentSpec = CONTENT_TYPES[type];
-	if (spec.captions === "voice") return id;
-	if (spec.captions === "transcript") return derivedNodeId(id, "captions");
+	const source = captionSource(type);
+	if (source === "voice") return id;
+	if (source === "transcript") return derivedNodeId(id, "captions");
 	return undefined;
 }
 

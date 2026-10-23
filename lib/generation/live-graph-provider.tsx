@@ -4,15 +4,19 @@ import { useCallback, useState, type ReactNode } from "react";
 import { useSlateStatic } from "slate-react";
 import { useShallow } from "zustand/react/shallow";
 import { createRequiredContext } from "@/lib/components/create-required-context";
+import type { GeneratedElement } from "@/lib/canvas/types";
+import type { DerivedKind } from "@/lib/connectors/registry";
 import { useModelChain } from "@/lib/connectors/use-default-models";
 import { useProject } from "@/lib/project/use-project";
-import { buildSettings } from "./graph";
-import { createGraphFor, type GenerationGraph } from "./generation-graph";
+import { buildSettings, type GenerationNode } from "./graph";
+import { createGraphFor } from "./generation-graph";
 import { useBuildContext } from "./use-build-context";
 
-const [LiveGraphContext, useLiveGraph] =
-	createRequiredContext<() => GenerationGraph>("LiveGraphContext");
-export { useLiveGraph };
+const [LiveGraphContext, useResolveNode] =
+	createRequiredContext<
+		(element: GeneratedElement, kind?: DerivedKind) => GenerationNode
+	>("LiveGraphContext");
+export { useResolveNode };
 
 export function LiveGraphProvider({ children }: { children: ReactNode }) {
 	const editor = useSlateStatic();
@@ -21,10 +25,14 @@ export function LiveGraphProvider({ children }: { children: ReactNode }) {
 	const models = useModelChain();
 	const [graphFor] = useState(createGraphFor);
 
-	const graph = useCallback(
-		() => graphFor(buildContext, editor.children, settings, models),
+	const resolve = useCallback(
+		(element: GeneratedElement, kind?: DerivedKind) =>
+			graphFor(buildContext, editor.children, settings, models).resolve(
+				element,
+				kind,
+			),
 		[editor, graphFor, buildContext, settings, models],
 	);
 
-	return <LiveGraphContext value={graph}>{children}</LiveGraphContext>;
+	return <LiveGraphContext value={resolve}>{children}</LiveGraphContext>;
 }

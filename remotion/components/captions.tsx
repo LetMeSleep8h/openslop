@@ -12,7 +12,7 @@ import {
 	type CaptionStyle,
 } from "@/lib/captions/caption-style";
 import { toSeconds } from "@/lib/render/frames";
-import type { ResolvedCaptions, Sequence } from "@/lib/render/types";
+import type { ResolvedCaptions } from "@/lib/render/types";
 
 // Caption styling applies to every caption in the composition, so it rides a
 // provider rather than threading through the sequence layers that never read it.
@@ -22,11 +22,9 @@ const [CaptionStyleContext, useCaptionStyle] =
 export const CaptionStyleProvider = CaptionStyleContext.Provider;
 
 export function Captions({
-	captions: { ownerId, firstWord, words: timestamps },
-	yieldSec = [],
+	captions: { ownerId, firstWord, words: timestamps, yieldSec = [] },
 }: {
 	captions: ResolvedCaptions;
-	yieldSec?: Sequence["captionsYieldSec"];
 }) {
 	const style = useCaptionStyle();
 	const renderLine = use(CaptionLineContext);

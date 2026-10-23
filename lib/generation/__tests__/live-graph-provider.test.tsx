@@ -13,7 +13,7 @@ import {
 } from "@/lib/canvas/types";
 import { createProjectStore, type ProjectContext } from "@/lib/project/store";
 import type { GenerationNode } from "../graph";
-import { LiveGraphProvider, useLiveGraph } from "../live-graph-provider";
+import { LiveGraphProvider, useResolveNode } from "../live-graph-provider";
 import { buildCtx } from "./_context";
 
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
@@ -29,9 +29,8 @@ let buildContext = contextNow();
 vi.mock("../use-build-context", () => ({
 	useBuildContext: () => buildContext,
 }));
-const chain = {};
 vi.mock("@/lib/connectors/use-default-models", () => ({
-	useModelChain: () => chain,
+	useModelChain: () => ({}),
 }));
 vi.mock("@/lib/project/use-project", async () => {
 	const { useStore } = await import("zustand");
@@ -44,8 +43,7 @@ vi.mock("@/lib/project/use-project", async () => {
 type Resolve = (element: GeneratedElement) => GenerationNode;
 let resolve: Resolve;
 function Reader({ onRead }: { onRead: (resolve: Resolve) => void }) {
-	const graph = useLiveGraph();
-	onRead((element) => graph().resolve(element));
+	onRead(useResolveNode());
 	return null;
 }
 

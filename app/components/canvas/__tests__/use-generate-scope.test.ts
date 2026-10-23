@@ -45,10 +45,7 @@ vi.mock("@/lib/generation/use-build-context", () => ({
 	useBuildContext: () => buildContext,
 }));
 vi.mock("@/lib/generation/live-graph-provider", () => ({
-	useLiveGraph: () => {
-		const graph = new GenerationGraph(buildContext());
-		return () => graph;
-	},
+	useResolveNode: () => new GenerationGraph(buildContext()).resolve,
 }));
 
 const makeElement = (

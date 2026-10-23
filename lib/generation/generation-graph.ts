@@ -86,12 +86,9 @@ export class GenerationGraph {
 	}
 
 	/** The element's own node, or with `kind` the job derived from it. */
-	resolve(element: GeneratedElement, kind?: DerivedKind): GenerationNode {
-		return (
-			this.nodes.get(nodeId(element, kind)) ??
-			this.build(generatedById(this.ctx.canvas, element.id) ?? element, kind)
-		);
-	}
+	resolve = (element: GeneratedElement, kind?: DerivedKind): GenerationNode =>
+		this.nodes.get(nodeId(element, kind)) ??
+		this.build(generatedById(this.ctx.canvas, element.id) ?? element, kind);
 
 	private build(element: GeneratedElement, kind?: DerivedKind): GenerationNode {
 		const id = nodeId(element, kind);

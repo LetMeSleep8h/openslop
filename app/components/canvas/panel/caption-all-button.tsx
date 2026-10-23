@@ -5,9 +5,10 @@ import { useSlateStatic } from "slate-react";
 import { Button } from "@/components/ui/button";
 import { Sparkles } from "@/components/ui/icon";
 import { getCanvasElements } from "@/lib/canvas/assets";
-import { captionClips } from "@/lib/captions/caption-clips";
+import { captionSource } from "@/lib/canvas/types";
 import { plural } from "@/lib/format";
 import { generatedById } from "@/lib/generation/generation-graph";
+import { layoutSequences } from "@/lib/render/scene-builder";
 import { useLayout } from "../../player/render-layout-context";
 import { useCaptionsScope } from "../hooks/use-clip-captions";
 import type { GenerateCounts } from "../hooks/use-generate-scope";
@@ -26,9 +27,11 @@ export function CaptionAllButton() {
 
 	const transcribed = useMemo(() => {
 		const canvas = getCanvasElements(editor.children);
-		return captionClips(layout)
-			.filter(({ source }) => source === "transcript")
-			.flatMap(({ element }) => generatedById(canvas, element.id) ?? []);
+		const ids = layoutSequences(layout)
+			.map(({ element }) => element)
+			.filter(({ type }) => captionSource(type) === "transcript")
+			.map(({ id }) => id);
+		return [...new Set(ids)].flatMap((id) => generatedById(canvas, id) ?? []);
 	}, [editor, layout]);
 	const scope = useCaptionsScope(useCallback(() => transcribed, [transcribed]));
 

@@ -21,8 +21,10 @@ describe("caption yields", () => {
 			}),
 		]);
 		const [video] = layout.series;
-		expect(video.captionsYieldSec).toEqual([[0, 3]]);
-		expect(layout.sequences.narration?.[0].captionsYieldSec).toBeUndefined();
+		expect(video.element.captions?.yieldSec).toEqual([[0, 3]]);
+		expect(
+			layout.sequences.narration?.[0].element.captions?.yieldSec,
+		).toBeUndefined();
 	});
 
 	it("hides music's captions under a captioned video, and nothing under one without words", () => {
@@ -34,7 +36,9 @@ describe("caption yields", () => {
 			music,
 			resolvedElement("vid", "video", { durationSec: 8 }),
 		]);
-		expect(quiet.sequences.music?.[0].captionsYieldSec).toBeUndefined();
+		expect(
+			quiet.sequences.music?.[0].element.captions?.yieldSec,
+		).toBeUndefined();
 
 		const spoken = layoutOf([
 			music,
@@ -43,6 +47,8 @@ describe("caption yields", () => {
 				captions: captions("vid:captions"),
 			}),
 		]);
-		expect(spoken.sequences.music?.[0].captionsYieldSec).toEqual([[0, 8]]);
+		expect(spoken.sequences.music?.[0].element.captions?.yieldSec).toEqual([
+			[0, 8],
+		]);
 	});
 });
