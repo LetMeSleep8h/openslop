@@ -156,7 +156,8 @@ export const createGraphFor = () => {
 export const buildNode = (
 	element: GeneratedElement,
 	ctx: BuildContext,
-): GenerationNode => new GenerationGraph(ctx).resolve(element);
+	kind?: DerivedKind,
+): GenerationNode => new GenerationGraph(ctx).resolve(element, kind);
 
 export const buildNodes = (
 	elements: GeneratedElement[],

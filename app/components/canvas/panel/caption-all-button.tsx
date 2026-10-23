@@ -1,17 +1,18 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
+import { useCallback } from "react";
 import { useSlateStatic } from "slate-react";
 import { Button } from "@/components/ui/button";
 import { Sparkles } from "@/components/ui/icon";
 import { getCanvasElements } from "@/lib/canvas/assets";
 import { captionSource } from "@/lib/canvas/types";
 import { plural } from "@/lib/format";
-import { generatedById } from "@/lib/generation/generation-graph";
+import { buildNodes, generatedById } from "@/lib/generation/generation-graph";
+import { useBuildContext } from "@/lib/generation/use-build-context";
+import { useLiveNodes } from "@/lib/generation/use-live-nodes";
 import { layoutSequences } from "@/lib/render/scene-builder";
 import { useLayout } from "../../player/render-layout-context";
-import { useCaptionsScope } from "../hooks/use-clip-captions";
-import type { GenerateCounts } from "../hooks/use-generate-scope";
+import { useNodeScope, type GenerateCounts } from "../hooks/use-generate-scope";
 
 function describe({ empty, active, pending }: GenerateCounts) {
 	if (empty) return "No video or music to caption";
@@ -24,8 +25,9 @@ function describe({ empty, active, pending }: GenerateCounts) {
 export function CaptionAllButton() {
 	const editor = useSlateStatic();
 	const { layout } = useLayout();
+	const buildContext = useBuildContext();
 
-	const transcribed = useMemo(() => {
+	const transcribed = useCallback(() => {
 		const canvas = getCanvasElements(editor.children);
 		const ids = layoutSequences(layout)
 			.map(({ element }) => element)
@@ -33,7 +35,11 @@ export function CaptionAllButton() {
 			.map(({ id }) => id);
 		return [...new Set(ids)].flatMap((id) => generatedById(canvas, id) ?? []);
 	}, [editor, layout]);
-	const scope = useCaptionsScope(useCallback(() => transcribed, [transcribed]));
+	const build = useCallback(
+		() => buildNodes(transcribed(), buildContext(), "captions"),
+		[transcribed, buildContext],
+	);
+	const scope = useNodeScope(useLiveNodes(transcribed, "captions"), build);
 
 	return (
 		<Button

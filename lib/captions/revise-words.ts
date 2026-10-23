@@ -1,4 +1,4 @@
-import type { AssetResult, TextTimestamp } from "@/lib/connectors/types";
+import type { TextTimestamp } from "@/lib/connectors/types";
 
 /** Typed text becomes one caption line over the span it replaces, each word timed by its length. */
 export function reviseWords(
@@ -20,17 +20,4 @@ export function reviseWords(
 		return { text: word, start, end: at, line };
 	});
 	return [...words.slice(0, from), ...retimed, ...words.slice(to)];
-}
-
-export function reviseCaptions(
-	result: AssetResult,
-	from: number,
-	to: number,
-	text: string,
-): AssetResult {
-	if (!result.textTimestamps) throw new Error("This result has no captions");
-	return {
-		...result,
-		textTimestamps: reviseWords(result.textTimestamps, from, to, text),
-	};
 }

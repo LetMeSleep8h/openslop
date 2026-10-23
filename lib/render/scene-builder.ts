@@ -8,7 +8,7 @@ import {
 import { ASPECT_RATIO_DIMENSIONS } from "../project/aspect-ratio";
 import type { VideoSettings } from "../project/video-settings";
 import { blankScene } from "./blank-scene";
-import { captionYields } from "./caption-yields";
+import { applyCaptionYields } from "./caption-yields";
 import { loopStrideSec } from "./audio-fade";
 import { toFrames, toSeconds } from "./frames";
 import { transitionOverlapSec } from "./transitions";
@@ -165,18 +165,7 @@ export function buildRenderLayout(
 		}
 	}
 
-	const captioned = layoutSequences({ series, sequences }).filter(
-		(sequence) => sequence.element.captions,
-	);
-	for (const sequence of captioned) {
-		const { captions } = sequence.element;
-		const yieldSec = captionYields(sequence, captioned);
-		if (captions && yieldSec.length > 0)
-			sequence.element = {
-				...sequence.element,
-				captions: { ...captions, yieldSec },
-			};
-	}
+	applyCaptionYields(layoutSequences({ series, sequences }));
 
 	return {
 		...config,

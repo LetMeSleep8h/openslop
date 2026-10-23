@@ -649,3 +649,51 @@ describe("buildRenderLayout", () => {
 		});
 	});
 });
+
+describe("caption yields", () => {
+	const captions = (ownerId: string) => ({
+		ownerId,
+		firstWord: 0,
+		words: [{ text: "hi", start: 0, end: 1 }],
+	});
+	const video = (withWords: boolean) =>
+		el({
+			id: "vid",
+			type: "video",
+			durationSec: 8,
+			captions: withWords ? captions("vid:captions") : undefined,
+		});
+	const music = el({
+		id: "mus",
+		type: "music",
+		durationSec: 8,
+		captions: captions("mus:captions"),
+	});
+
+	it("hides a video's captions while speech over it is captioned", () => {
+		const layout = layoutOf([
+			{ ...video(true), durationSec: 10 },
+			el({
+				id: "nar",
+				type: "narration",
+				durationSec: 3,
+				captions: captions("nar"),
+			}),
+		]);
+		expect(layout.series[0].element.captions?.yieldSec).toEqual([[0, 3]]);
+		expect(
+			layout.sequences.narration?.[0].element.captions?.yieldSec,
+		).toBeUndefined();
+	});
+
+	it("hides music's captions only under a video that has words", () => {
+		expect(
+			layoutOf([music, video(false)]).sequences.music?.[0].element.captions
+				?.yieldSec,
+		).toBeUndefined();
+		expect(
+			layoutOf([music, video(true)]).sequences.music?.[0].element.captions
+				?.yieldSec,
+		).toEqual([[0, 8]]);
+	});
+});

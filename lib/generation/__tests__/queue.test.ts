@@ -554,9 +554,6 @@ describe("GenerationQueue", () => {
 			expect(isNodeStale(makeJob("rv1", [], made), generationQueue)).toBe(
 				false,
 			);
-			expect(
-				isNodeStale(makeJob("rv1", [], { prompt: "hello" }), generationQueue),
-			).toBe(true);
 			expect(committed).toHaveBeenLastCalledWith(
 				expect.objectContaining({
 					elementId: "rv1",

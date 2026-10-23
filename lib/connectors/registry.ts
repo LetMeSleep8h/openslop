@@ -43,19 +43,16 @@ export const DEFAULT_CONNECTOR_REGISTRY: ConnectorRegistry = {
 	asset_voice: {},
 };
 
-/** A job run off an element's own result instead of a prompt, held apart from the element's. */
-export type DerivedJob = ConnectorConfig & {
-	connector: AssetConnectorType;
-	/** Runs on whichever provider this type's pick is on, so no one picks it twice. */
-	providerOf: ConnectorType;
-};
-
+/** Jobs run off an element's own result instead of a prompt, each on the provider of `providerOf`'s pick so no one picks it twice. */
 export const DERIVED_JOBS = {
 	captions: {
 		connector: "transcript",
 		providerOf: "tts",
 		plugins: [createClipSoundPlugin()],
 	},
-} satisfies Record<string, DerivedJob>;
+} satisfies Record<
+	string,
+	ConnectorConfig & { connector: AssetConnectorType; providerOf: ConnectorType }
+>;
 
 export type DerivedKind = keyof typeof DERIVED_JOBS;

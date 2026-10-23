@@ -1,72 +1,49 @@
 "use client";
 
 import type { ComponentProps } from "react";
-import { Badge } from "@/components/ui/badge";
 import { Captions } from "@/components/ui/icon";
-import { Spinner } from "@/components/ui/spinner";
-import { SimpleTooltip } from "@/components/ui/tooltip";
 import type { ContentElement } from "@/lib/canvas/types";
 import { isGenerationActive } from "@/lib/generation/snapshots";
-import { useClipCaptions } from "../hooks/use-clip-captions";
+import { IconChip } from "../../models/icon-chip";
+import { useGenerate } from "../hooks/use-generate";
 import { useElementGeneration } from "./element-generation-context";
 
-type Tone = NonNullable<ComponentProps<typeof Badge>["variant"]>;
+type Status = Pick<ComponentProps<typeof IconChip>, "label" | "variant">;
 
-/** Says whether a clip's captions exist; making them is the Caption button's job. */
-function CaptionsStatus({
-	label,
-	tone,
-	busy = false,
-}: {
-	label: string;
-	tone: Tone;
-	busy?: boolean;
-}) {
-	return (
-		<SimpleTooltip label={label}>
-			<Badge size="icon" variant={tone}>
-				{busy ? (
-					<Spinner className="text-current" />
-				) : (
-					<Captions aria-hidden="true" size={14} />
-				)}
-				<span className="sr-only">{label}</span>
-			</Badge>
-		</SimpleTooltip>
-	);
+function transcriptStatus({
+	status,
+	error,
+	hasResult,
+	staleReason,
+}: ReturnType<typeof useGenerate>): Status {
+	if (isGenerationActive(status))
+		return { label: "Captioning…", variant: "subtle" };
+	if (error)
+		return { label: `Captions failed: ${error}`, variant: "destructive" };
+	if (staleReason)
+		return {
+			label: `Captions out of date: ${staleReason}`,
+			variant: "tertiary",
+		};
+	return hasResult
+		? { label: "Captioned", variant: "subtle" }
+		: { label: "Not captioned yet", variant: "muted" };
 }
 
 export function VoiceCaptionsStatus() {
 	const { result } = useElementGeneration();
-	return result?.textTimestamps?.length ? (
-		<CaptionsStatus label="Captioned from the voice" tone="subtle" />
-	) : (
-		<CaptionsStatus label="Captions come with the voice" tone="muted" />
-	);
+	const status: Status = result?.textTimestamps?.length
+		? { label: "Captioned from the voice", variant: "subtle" }
+		: { label: "Captions come with the voice", variant: "muted" };
+	return <IconChip icon={Captions} {...status} />;
 }
 
+/** Says whether the clip's captions exist; making them is the Caption button's job. */
 export function TranscribedCaptionsStatus({
 	element,
 }: {
 	element: ContentElement;
 }) {
-	const { status, error, hasResult, staleReason } = useClipCaptions(element);
-	if (isGenerationActive(status))
-		return <CaptionsStatus label="Captioning…" tone="subtle" busy />;
-	if (error)
-		return (
-			<CaptionsStatus label={`Captions failed: ${error}`} tone="destructive" />
-		);
-	if (staleReason)
-		return (
-			<CaptionsStatus
-				label={`Captions out of date: ${staleReason}`}
-				tone="tertiary"
-			/>
-		);
-	return hasResult ? (
-		<CaptionsStatus label="Captioned" tone="subtle" />
-	) : (
-		<CaptionsStatus label="Not captioned yet" tone="muted" />
-	);
+	const captions = useGenerate(element, "captions");
+	return <IconChip icon={Captions} {...transcriptStatus(captions)} />;
 }

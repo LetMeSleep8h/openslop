@@ -9,7 +9,7 @@ const CAPTION_RANK: Record<ElementRole, number> = {
 };
 
 /** Speech outranks a video's sound, which outranks the music under it: where two clips would caption at once, only the higher shows. */
-export function captionYields(
+function captionYields(
 	sequence: Sequence,
 	captioned: Sequence[],
 ): [number, number][] {
@@ -23,4 +23,17 @@ export function captionYields(
 			? [[from - sequence.start, to - sequence.start] as [number, number]]
 			: [];
 	});
+}
+
+export function applyCaptionYields(sequences: Sequence[]): void {
+	const captioned = sequences.filter((sequence) => sequence.element.captions);
+	for (const sequence of captioned) {
+		const { captions } = sequence.element;
+		const yieldSec = captionYields(sequence, captioned);
+		if (captions && yieldSec.length > 0)
+			sequence.element = {
+				...sequence.element,
+				captions: { ...captions, yieldSec },
+			};
+	}
 }

@@ -13,11 +13,9 @@ export type CaptionLineProps = {
 	to: number;
 };
 
-function StaticCaptionLine({ style, words, fontSizePx }: CaptionLineProps) {
-	return <CaptionOverlay style={style} words={words} fontSizePx={fontSizePx} />;
-}
-
 // The editor swaps in a line that edits; an export keeps the static one.
 export const CaptionLineContext = createContext<
 	(props: CaptionLineProps) => ReactNode
->((props) => <StaticCaptionLine {...props} />);
+>(({ style, words, fontSizePx }) => (
+	<CaptionOverlay style={style} words={words} fontSizePx={fontSizePx} />
+));

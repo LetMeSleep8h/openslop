@@ -60,10 +60,7 @@ function describe(
 	return `Generate ${fresh} ${noun(fresh)} and regenerate ${stale} stale in this ${subject}`;
 }
 
-/**
- * Counts what in `nodes` is missing or out of date, and queues it. `build`
- * makes the same nodes afresh at the click, since a live node's job may lag.
- */
+/** Counts what in `nodes` is missing or out of date, and queues `build()` of it. */
 export function useNodeScope(
 	nodes: GenerationNode[],
 	build: () => GenerationNode[],
@@ -78,11 +75,12 @@ export function useNodeScope(
 	const pending = useQueueSelector(
 		(q) => nodes.filter((node) => needsGeneration(node, q)).length,
 	);
-	// Always a subset of `pending`, so `pending - stale` never goes negative.
+	// Always a subset of `pending`, so `fresh` below cannot go negative.
 	const stale = useQueueSelector(
 		(q) => nodes.filter((node) => isNodeStale(node, q)).length,
 	);
 
+	// Built again at the click, for the same reason as a single element's generate.
 	const run = useCallback(() => {
 		queue.enqueueGraph(build().filter((node) => needsGeneration(node, queue)));
 	}, [queue, build]);

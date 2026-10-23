@@ -8,7 +8,6 @@ import type { DerivedKind } from "@/lib/connectors/registry";
 import type { GenerationNode } from "./graph";
 import { useResolveNode } from "./live-graph-provider";
 
-/** The element's own node, or with `kind` the job derived from it. */
 export function useLiveNode(
 	element: GeneratedElement,
 	kind?: DerivedKind,

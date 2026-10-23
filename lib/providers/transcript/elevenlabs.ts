@@ -1,7 +1,7 @@
 import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
-import {
+import type {
 	SpeechToTextConvertRequestModelId,
-	type SpeechToTextWordResponseModel,
+	SpeechToTextWordResponseModel,
 } from "@elevenlabs/elevenlabs-js/api";
 import type { TextTimestamp } from "@/lib/connectors/types";
 import type { BundleFile } from "@/lib/api/asset-bundle";
@@ -13,13 +13,6 @@ import type { TranscriptProvider } from "../types";
 
 /** ElevenLabs reports no per-request cost; batch Scribe is $0.22 an hour. */
 const USD_PER_HOUR = 0.22;
-
-const SCRIBE_MODELS: readonly string[] = Object.values(
-	SpeechToTextConvertRequestModelId,
-);
-
-const isScribeModel = (id: string): id is SpeechToTextConvertRequestModelId =>
-	SCRIBE_MODELS.includes(id);
 
 /** Spoken words only: the gaps between them and sounds like laughter are not captions. */
 const toTimestamps = (
@@ -55,11 +48,9 @@ export class ElevenLabsTranscript
 	}
 
 	protected async _generate({ mediaUrl, model }: TranscriptRequest) {
-		if (!isScribeModel(model))
-			throw new Error(`ElevenLabs has no speech-to-text model "${model}"`);
 		const { words, audioDurationSecs } = await this.client.speechToText.convert(
 			{
-				modelId: model,
+				modelId: model as SpeechToTextConvertRequestModelId,
 				cloudStorageUrl: mediaUrl,
 				timestampsGranularity: "word",
 				tagAudioEvents: false,

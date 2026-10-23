@@ -29,7 +29,7 @@ export function ElementStaleIndicator() {
 	return <StaleIndicator reason={staleReason} />;
 }
 
-export const GENERATE_ICON: Record<GenerationStatus, ReactNode> = {
+const GENERATE_ICON: Record<GenerationStatus, ReactNode> = {
 	generating: <Spinner className="text-current" />,
 	queued: <Hourglass aria-hidden="true" />,
 	idle: <Sparkles aria-hidden="true" />,
@@ -46,13 +46,16 @@ export function GenerateButton({
 	hasResult,
 	disabled,
 	onGenerate,
+	label = generateLabel(status, hasResult),
+	tooltip = hasResult ? "Regenerate this element" : "Generate this element",
 }: {
 	status: GenerationStatus;
 	hasResult: boolean;
 	disabled: boolean;
 	onGenerate: () => void;
+	label?: string;
+	tooltip?: string;
 }) {
-	const label = generateLabel(status, hasResult);
 	return (
 		<Button
 			type="button"
@@ -63,7 +66,7 @@ export function GenerateButton({
 			onMouseDown={(e) => e.preventDefault()}
 			onClick={onGenerate}
 			aria-label={label}
-			tooltip={hasResult ? "Regenerate this element" : "Generate this element"}
+			tooltip={tooltip}
 		>
 			{GENERATE_ICON[status]}
 			{label}

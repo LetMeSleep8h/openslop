@@ -18,26 +18,16 @@ import {
 } from "../canvas/element-attributes";
 import { elementTrim, trimTimestamps } from "./clip-trim";
 
-type GetSnapshot = (id: string) => ElementSnapshot;
-
-/** The node whose result holds a clip's words: the clip's own for speech, its derived captions for anything transcribed. */
-function captionsOwnerId({
-	id,
-	type,
-}: Pick<ContentElement, "id" | "type">): string | undefined {
-	const source = captionSource(type);
-	if (source === "voice") return id;
-	if (source === "transcript") return derivedNodeId(id, "captions");
-	return undefined;
-}
-
+/** Speech holds its own words; anything transcribed holds them on its derived captions node. */
 function resolveCaptions(
 	element: ContentElement,
-	getSnapshot: GetSnapshot,
+	getSnapshot: (id: string) => ElementSnapshot,
 	trimStartSec: number,
 ): ResolvedCaptions | undefined {
-	const ownerId = captionsOwnerId(element);
-	if (!ownerId) return undefined;
+	const source = captionSource(element.type);
+	if (!source) return undefined;
+	const ownerId =
+		source === "voice" ? element.id : derivedNodeId(element.id, "captions");
 	const timestamps = getSnapshot(ownerId).result?.textTimestamps;
 	if (!timestamps?.length) return undefined;
 	const words = trimTimestamps(timestamps, trimStartSec);
@@ -46,7 +36,7 @@ function resolveCaptions(
 
 export function resolveElements(
 	blocks: CanvasBlock[],
-	getSnapshot: GetSnapshot,
+	getSnapshot: (id: string) => ElementSnapshot,
 	{ captionsEnabled }: { captionsEnabled: boolean },
 ): ResolvedElement[] {
 	const resolved: ResolvedElement[] = [];
