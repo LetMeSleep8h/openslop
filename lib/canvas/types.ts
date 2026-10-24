@@ -71,7 +71,7 @@ export function captionSourceOf(
 	return spec.captionSource;
 }
 
-export const hasCaptions = (type: ContentType): boolean =>
+export const isCaptionable = (type: ContentType): boolean =>
 	captionSourceOf(type) !== undefined;
 
 const ALL_CONTENT_TYPES = Object.keys(CONTENT_TYPES) as ContentType[];

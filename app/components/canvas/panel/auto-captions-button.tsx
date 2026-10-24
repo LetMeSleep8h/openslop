@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { MagicCaptions } from "@/components/ui/icon";
 import { captionsNodeId } from "@/lib/captions/captions-job";
 import { getCanvasElements } from "@/lib/canvas/assets";
-import { hasCaptions } from "@/lib/canvas/types";
+import { isCaptionable } from "@/lib/canvas/types";
 import { plural } from "@/lib/format";
 import { generatedById } from "@/lib/generation/generation-graph";
 import {
@@ -16,7 +16,7 @@ import {
 import type { GenerationQueue } from "@/lib/generation/queue";
 import { isGenerationActive } from "@/lib/generation/snapshots";
 import { layoutSequences } from "@/lib/render/sequences";
-import { useLayout } from "../../player/render-layout-context";
+import { useLayout } from "@/app/components/player/render-layout-context";
 import { useTranscribeClips } from "../hooks/use-clip-captions";
 
 const uncaptioned = (queue: GenerationQueue, ids: string[]) =>
@@ -42,7 +42,7 @@ export function AutoCaptionsButton() {
 		() => [
 			...new Set(
 				layoutSequences(layout)
-					.filter(({ element }) => hasCaptions(element.type))
+					.filter(({ element }) => isCaptionable(element.type))
 					.map(({ element }) => element.id),
 			),
 		],

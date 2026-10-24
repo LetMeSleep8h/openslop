@@ -1,6 +1,6 @@
 import {
 	CONTENT_TYPES,
-	hasCaptions,
+	isCaptionable,
 	type CanvasBlock,
 	type ContentElement,
 } from "@/lib/canvas/types";
@@ -23,7 +23,7 @@ function resolveCaptions(
 	{ textTimestamps }: AssetResult,
 	trimStartSec: number,
 ): ResolvedCaptions | undefined {
-	if (!hasCaptions(element.type) || !textTimestamps?.length) return undefined;
+	if (!isCaptionable(element.type) || !textTimestamps?.length) return undefined;
 	const words = trimTimestamps(textTimestamps, trimStartSec);
 	return { firstWord: textTimestamps.length - words.length, words };
 }

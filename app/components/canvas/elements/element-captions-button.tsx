@@ -21,6 +21,7 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import type { ContentElement } from "@/lib/canvas/types";
+import { isGenerationActive } from "@/lib/generation/snapshots";
 import { useClipCaptions } from "../hooks/use-clip-captions";
 import { ELEMENT_CONFIGS } from "./element-configs";
 import { useElementGeneration } from "./element-generation-context";
@@ -42,6 +43,11 @@ const NO_CLIP: Face = {
 	icon: <MagicCaptions size={SIZE} />,
 };
 
+const CLIP_BUSY: Face = {
+	label: "Captions wait for the clip to finish generating",
+	icon: <Hourglass size={SIZE} />,
+};
+
 /** How the button looks before there are captions to act on; null once there are. */
 function faceOf(captions: Captions): Face | null {
 	if (captions.status === "queued")
@@ -51,7 +57,6 @@ function faceOf(captions: Captions): Face | null {
 			label: "Generating captions…",
 			icon: <Spinner className="text-current" />,
 		};
-	if (captions.captioned) return null;
 	if (captions.error)
 		return {
 			label: `Captions failed: ${captions.error}. Try again`,
@@ -59,6 +64,7 @@ function faceOf(captions: Captions): Face | null {
 			variant: "destructive",
 			onClick: captions.generate,
 		};
+	if (captions.captioned) return null;
 	return {
 		label: "Generate captions",
 		icon: <MagicCaptions size={SIZE} />,
@@ -110,11 +116,12 @@ export function ElementCaptionsButton({
 }: {
 	element: ContentElement;
 }) {
-	const { result: clip } = useElementGeneration();
+	const { result: clip, status: clipStatus } = useElementGeneration();
 	const captions = useClipCaptions(element, clip);
 	const [removing, setRemoving] = useState(false);
 
 	if (!clip) return <FaceButton face={NO_CLIP} />;
+	if (isGenerationActive(clipStatus)) return <FaceButton face={CLIP_BUSY} />;
 	const face = faceOf(captions);
 	if (face) return <FaceButton face={face} />;
 
