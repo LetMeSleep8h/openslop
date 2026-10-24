@@ -8,7 +8,7 @@ import {
 import { ASPECT_RATIO_DIMENSIONS } from "../project/aspect-ratio";
 import type { VideoSettings } from "../project/video-settings";
 import { blankScene } from "./blank-scene";
-import { applyCaptionYields } from "./caption-yields";
+import { applyCaptionRule } from "./caption-rule";
 import { loopStrideSec } from "./audio-fade";
 import { toFrames, toSeconds } from "./frames";
 import { transitionOverlapSec } from "./transitions";
@@ -165,7 +165,7 @@ export function buildRenderLayout(
 		}
 	}
 
-	applyCaptionYields(
+	applyCaptionRule(
 		layoutSequences({ series, sequences }),
 		transitionDurationSec,
 	);

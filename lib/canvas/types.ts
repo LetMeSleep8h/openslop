@@ -17,8 +17,7 @@ export type ContentSpec = {
 	outputKind: ResultKind;
 	role: ElementRole;
 	layer: LayerType;
-	/** Its clips caption; where two would at once, the lower rank shows. */
-	captionRank?: number;
+	captions?: "speech" | "video";
 };
 
 export const CONTENT_TYPES = {
@@ -27,14 +26,14 @@ export const CONTENT_TYPES = {
 		outputKind: "audio",
 		role: "overlay",
 		layer: "audio",
-		captionRank: 0,
+		captions: "speech",
 	},
 	character: {
 		connector: "tts",
 		outputKind: "audio",
 		role: "overlay",
 		layer: "audio",
-		captionRank: 0,
+		captions: "speech",
 	},
 	image: {
 		connector: "image",
@@ -47,7 +46,7 @@ export const CONTENT_TYPES = {
 		outputKind: "video",
 		role: "foreground",
 		layer: "visual",
-		captionRank: 1,
+		captions: "video",
 	},
 	sound: {
 		connector: "sfx",
@@ -60,19 +59,19 @@ export const CONTENT_TYPES = {
 		outputKind: "audio",
 		role: "background",
 		layer: "audio",
-		captionRank: 2,
 	},
 } as const satisfies Record<string, ContentSpec>;
 
 export type ContentType = keyof typeof CONTENT_TYPES;
 
-export function captionRank(type: ContentType): number | undefined {
+/** Speech is always captioned; a video only while no speech plays over it. */
+export function captionsOf(type: ContentType): ContentSpec["captions"] {
 	const spec: ContentSpec = CONTENT_TYPES[type];
-	return spec.captionRank;
+	return spec.captions;
 }
 
 export const hasCaptions = (type: ContentType): boolean =>
-	captionRank(type) !== undefined;
+	captionsOf(type) !== undefined;
 
 const ALL_CONTENT_TYPES = Object.keys(CONTENT_TYPES) as ContentType[];
 

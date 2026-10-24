@@ -9,8 +9,8 @@ export type ResolvedCaptions = {
 	/** Where `words` start in the clip's own word list, past those the trim cut. */
 	firstWord: number;
 	words: TextTimestamp[];
-	/** Spans, from the clip's start, where a clip that outranks it shows its captions instead. */
-	yieldSec?: [number, number][];
+	/** When, from the clip's start, its captions stop. */
+	untilSec?: number;
 };
 
 export type ResolvedElement = {

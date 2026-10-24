@@ -229,32 +229,13 @@ describe("buildCaptionLanes", () => {
 		});
 	};
 
-	it("lays one clip per line, each held until the next begins or its last word ends", () => {
+	it("lays one clip per line, the last held until the clip's captions stop", () => {
 		const [lane] = twoPerLine(el("a", "image"), narration);
 		expect(
 			lane.map(({ start, duration, text }) => ({ start, duration, text })),
 		).toEqual([
 			{ start: 0, duration: 2, text: "one two" },
-			{ start: 2, duration: 1, text: "three" },
-		]);
-	});
-
-	it("leaves out the lines a louder clip's captions cover", () => {
-		const yielding = el("n", "narration", {
-			captions: { firstWord: 0, words, yieldSec: [[0, 2]] },
-		});
-		const [lane] = twoPerLine(el("a", "image"), yielding);
-		expect(lane.map(({ text }) => text)).toEqual(["three"]);
-	});
-
-	it("cuts a line around the span a louder clip's captions take", () => {
-		const yielding = el("n", "narration", {
-			captions: { firstWord: 0, words, yieldSec: [[1, 2.5]] },
-		});
-		const [lane] = twoPerLine(el("a", "image"), yielding);
-		expect(lane.map(({ start, duration }) => [start, duration])).toEqual([
-			[0, 1],
-			[2.5, 0.5],
+			{ start: 2, duration: 2, text: "three" },
 		]);
 	});
 });

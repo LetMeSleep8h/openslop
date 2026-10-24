@@ -65,13 +65,15 @@ describe("captionPages", () => {
 });
 
 describe("captionLines", () => {
-	it("cuts a line around the span a louder clip's captions take", () => {
-		const lines = captionLines({ words: timed, yieldSec: [[1, 3]] }, 1500);
+	it("holds the last line until the captions stop, and drops lines after", () => {
+		const lines = captionLines({ words: timed, untilSec: 3.5 }, 1500);
 		expect(lines.map(({ from, start, end }) => [from, start, end])).toEqual([
-			[0, 0, 1],
-			[2, 3, 4],
-			[4, 4, 4.8],
+			[0, 0, 2],
+			[2, 2, 3.5],
 		]);
+		expect(captionLines({ words: timed, untilSec: 10 }, 1500).at(-1)?.end).toBe(
+			10,
+		);
 	});
 });
 

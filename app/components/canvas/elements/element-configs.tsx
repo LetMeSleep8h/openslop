@@ -97,7 +97,6 @@ const PRESENTATION: Record<ContentType, ElementPresentation> = {
 		iconBgClass: "bg-media-music/15",
 		colorClass: "text-media-music",
 		placeholder: "Describe the music...",
-		tools: [ElementCaptionsButton],
 		actions: [AudioUploadButton],
 	},
 };

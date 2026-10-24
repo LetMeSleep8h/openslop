@@ -650,57 +650,39 @@ describe("buildRenderLayout", () => {
 	});
 });
 
-describe("caption yields", () => {
+describe("the caption rule", () => {
 	const captions = () => ({
 		firstWord: 0,
 		words: [{ text: "hi", start: 0, end: 1 }],
 	});
-	const video = (withWords: boolean) =>
-		el({
-			id: "vid",
-			type: "video",
-			durationSec: 8,
-			captions: withWords ? captions() : undefined,
-		});
-	const music = el({
-		id: "mus",
-		type: "music",
-		durationSec: 8,
+	const video = el({
+		id: "vid",
+		type: "video",
+		durationSec: 10,
+		captions: captions(),
+	});
+	const narration = el({
+		id: "nar",
+		type: "narration",
+		durationSec: 3,
 		captions: captions(),
 	});
 
-	it("hides a video's captions while speech over it is captioned", () => {
-		const layout = layoutOf([
-			{ ...video(true), durationSec: 10 },
-			el({
-				id: "nar",
-				type: "narration",
-				durationSec: 3,
-				captions: captions(),
-			}),
-		]);
-		expect(layout.series[0].element.captions?.yieldSec).toEqual([[0, 3]]);
-		expect(
-			layout.sequences.narration?.[0].element.captions?.yieldSec,
-		).toBeUndefined();
+	it("drops a video's captions when speech plays over it, and keeps the speech's", () => {
+		const layout = layoutOf([video, narration]);
+		expect(layout.series[0].element.captions).toBeUndefined();
+		expect(layout.sequences.narration?.[0].element.captions?.untilSec).toBe(3);
 	});
 
-	it("hides music's captions only under a video that has words", () => {
-		expect(
-			layoutOf([music, video(false)]).sequences.music?.[0].element.captions
-				?.yieldSec,
-		).toBeUndefined();
-		expect(
-			layoutOf([music, video(true)]).sequences.music?.[0].element.captions
-				?.yieldSec,
-		).toEqual([[0, 8]]);
+	it("keeps a video's captions when nothing is said over it", () => {
+		expect(layoutOf([video]).series[0].element.captions?.untilSec).toBe(10);
 	});
 
-	it("gives up the tail the next scene's transition steals", () => {
-		const layout = layoutOf([video(true)], { transitionType: "fade" });
+	it("stops captions short of the tail the next scene's transition steals", () => {
+		const layout = layoutOf([video], { transitionType: "fade" });
 		const [{ element, duration }] = layout.series;
-		expect(element.captions?.yieldSec).toEqual([
-			[duration - layout.transitionDurationSec, duration],
-		]);
+		expect(element.captions?.untilSec).toBe(
+			duration - layout.transitionDurationSec,
+		);
 	});
 });

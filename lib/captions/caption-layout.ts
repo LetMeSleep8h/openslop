@@ -1,7 +1,6 @@
 import { createTikTokStyleCaptions } from "@remotion/captions";
 import sortedLastIndex from "lodash/sortedLastIndex";
 import type { TextTimestamp } from "@/lib/connectors/types";
-import { shownSpans } from "@/lib/render/caption-yields";
 
 export type CaptionWord = { text: string; active: boolean };
 
@@ -62,18 +61,19 @@ export function captionPages(
 	});
 }
 
-/** The lines a clip shows, cut around the spans it yields to louder captions. */
-export const captionLines = (
+/** The lines a clip shows, the last held until its captions stop. */
+export function captionLines(
 	{
 		words,
-		yieldSec = [],
-	}: { words: readonly TextTimestamp[]; yieldSec?: [number, number][] },
+		untilSec = Infinity,
+	}: { words: readonly TextTimestamp[]; untilSec?: number },
 	lineMs: number,
-): CaptionLine[] =>
-	captionPages(words, lineMs).flatMap((line) =>
-		shownSpans(line.start, line.end, yieldSec).map(([start, end]) => ({
-			...line,
-			start,
-			end,
-		})),
-	);
+): CaptionLine[] {
+	const lines = captionPages(words, lineMs);
+	return lines.flatMap((line, index) => {
+		const end = index === lines.length - 1 ? untilSec : line.end;
+		return line.start < untilSec
+			? [{ ...line, end: Math.min(end, untilSec) }]
+			: [];
+	});
+}
