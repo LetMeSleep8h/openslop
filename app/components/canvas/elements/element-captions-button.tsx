@@ -36,13 +36,13 @@ interface Face {
 	onClick?: () => void;
 }
 
+const NO_CLIP: Face = {
+	label: "Generate the clip first to caption it",
+	icon: <MagicCaptions size={SIZE} />,
+};
+
 /** How the button looks before there are captions to act on; null once there are. */
-function faceOf(hasClip: boolean, captions: Captions): Face | null {
-	if (!hasClip)
-		return {
-			label: "Generate the clip first to caption it",
-			icon: <MagicCaptions size={SIZE} />,
-		};
+function faceOf(captions: Captions): Face | null {
 	if (captions.status === "queued")
 		return { label: "Captions queued", icon: <Hourglass size={SIZE} /> };
 	if (captions.status !== "idle")
@@ -63,6 +63,21 @@ function faceOf(hasClip: boolean, captions: Captions): Face | null {
 		icon: <MagicCaptions size={SIZE} />,
 		onClick: captions.generate,
 	};
+}
+
+function FaceButton({ face }: { face: Face }) {
+	return (
+		<SimpleTooltip label={face.label}>
+			<HeaderIconButton
+				ariaLabel={face.label}
+				variant={face.variant ?? "quiet"}
+				unavailable={!face.onClick}
+				onClick={face.onClick}
+			>
+				{face.icon}
+			</HeaderIconButton>
+		</SimpleTooltip>
+	);
 }
 
 function menuOf(captions: Captions, onRemove: () => void): ActionMenuItem[] {
@@ -97,22 +112,11 @@ export function ElementCaptionsButton({
 }) {
 	const { result: clip } = useElementGeneration();
 	const captions = useClipCaptions(element, clip);
-	const face = faceOf(Boolean(clip), captions);
 	const [removing, setRemoving] = useState(false);
 
-	if (face)
-		return (
-			<SimpleTooltip label={face.label}>
-				<HeaderIconButton
-					ariaLabel={face.label}
-					variant={face.variant ?? "quiet"}
-					unavailable={!face.onClick}
-					onClick={face.onClick}
-				>
-					{face.icon}
-				</HeaderIconButton>
-			</SimpleTooltip>
-		);
+	if (!clip) return <FaceButton face={NO_CLIP} />;
+	const face = faceOf(captions);
+	if (face) return <FaceButton face={face} />;
 
 	const label = captions.edited
 		? "Captions ready, edited in the player"
@@ -133,14 +137,14 @@ export function ElementCaptionsButton({
 				<TooltipContent>{label}</TooltipContent>
 			</Tooltip>
 			<ConfirmDeleteDialog
-				target={removing ? captions : undefined}
+				target={removing ? element : undefined}
 				onClose={() => setRemoving(false)}
-				title={() =>
-					`Remove this ${ELEMENT_CONFIGS[element.type].label.toLowerCase()}'s captions?`
+				title={({ type }) =>
+					`Remove this ${ELEMENT_CONFIGS[type].label.toLowerCase()}'s captions?`
 				}
 				description="Only this clip loses its captions and any edits to them. Getting them back means generating them again."
 				actionLabel="Remove captions"
-				onConfirm={({ remove }) => remove()}
+				onConfirm={captions.remove}
 			/>
 		</>
 	);

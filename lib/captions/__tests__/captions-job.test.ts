@@ -12,7 +12,12 @@ import type { AssetResult } from "@/lib/connectors/types";
 import type { generateForElement } from "@/lib/generation/generate-for-element";
 import { GenerationQueue } from "@/lib/generation/queue";
 import { jobNode } from "@/lib/generation/__tests__/_graph";
-import { captionsNode, captionsNodeId, landCaptions } from "../captions-job";
+import type { CommittedVersion } from "@/lib/generation/versions";
+import {
+	captionsNode,
+	captionsNodeId,
+	withCaptionsLanding,
+} from "../captions-job";
 
 let generateMock: Mock<typeof generateForElement>;
 
@@ -30,12 +35,14 @@ const transcribe = (take: AssetResult = clip) =>
 describe("captions jobs", () => {
 	let queue: GenerationQueue;
 	let stopLanding: () => void;
+	let record: Mock<(version: CommittedVersion) => void>;
 
 	beforeEach(async () => {
 		vi.useFakeTimers();
 		generateMock = vi.fn<typeof generateForElement>();
 		queue = new GenerationQueue();
-		stopLanding = landCaptions(queue);
+		record = vi.fn();
+		stopLanding = queue.onCommitted(withCaptionsLanding(queue, record));
 		generateMock.mockResolvedValue(clip);
 		queue.enqueueGraph([jobNode("clip")]);
 		await vi.runAllTimersAsync();
@@ -46,7 +53,7 @@ describe("captions jobs", () => {
 		vi.useRealTimers();
 	});
 
-	it("lands the words on the clip, under its inputs, and keeps nothing of their own", async () => {
+	it("lands the words on the clip, under its inputs, and records no version of their own", async () => {
 		const made = queue.getElementSnapshot("clip").resultInputs;
 		generateMock.mockResolvedValue({ durationSec: 2, textTimestamps: heard });
 		queue.enqueueGraph([transcribe()]);
@@ -60,6 +67,10 @@ describe("captions jobs", () => {
 			result: null,
 			error: null,
 		});
+		expect(record.mock.calls.map(([version]) => version.elementId)).toEqual([
+			"clip",
+			"clip",
+		]);
 	});
 
 	it("fails, leaving the clip alone, when the clip was remade meanwhile", async () => {

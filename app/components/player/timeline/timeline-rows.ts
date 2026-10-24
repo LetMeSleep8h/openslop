@@ -1,4 +1,5 @@
 import {
+	Captions,
 	Film,
 	Music,
 	Voice,
@@ -7,7 +8,7 @@ import {
 } from "@/components/ui/icon";
 import { captionLines } from "@/lib/captions/caption-layout";
 import type { ContentType, ElementRole, LayerType } from "@/lib/canvas/types";
-import { layoutSequences } from "@/lib/render/scene-builder";
+import { layoutSequences, secUntilNextScene } from "@/lib/render/sequences";
 import type { Sequence, RenderLayout } from "@/lib/render/types";
 
 export type TimelineClip = Sequence & { key: string };
@@ -34,22 +35,26 @@ const ROWS: Record<
 	background: { label: "Music", icon: Music, kind: "audio", numbered: false },
 };
 
+const CAPTION_ROW = {
+	label: "Captions",
+	icon: Captions,
+	kind: "captions",
+} as const;
+
 // Clips accumulated on the frame grid land a few ULPs apart, so a hair of
 // overlap still counts as a touch.
 const TOUCH_EPSILON = 1e-6;
 
-/** A scene's own span ends where the next begins, minus the cross-fade they share. */
-function trimOverlap(series: Sequence[], overlapSec: number): Sequence[] {
-	return series.map((sequence, index) =>
-		index === series.length - 1
-			? sequence
-			: { ...sequence, duration: Math.max(0, sequence.duration - overlapSec) },
-	);
+/** A scene's own span ends where the next begins. */
+function ownSpans(series: Sequence[]): Sequence[] {
+	return series.map((sequence) => ({
+		...sequence,
+		duration: secUntilNextScene(sequence, series),
+	}));
 }
 
 function sequencesForRole(layout: RenderLayout, role: ElementRole): Sequence[] {
-	if (role === "foreground")
-		return trimOverlap(layout.series, layout.transitionDurationSec);
+	if (role === "foreground") return ownSpans(layout.series);
 	return Object.values(layout.sequences)
 		.flat()
 		.filter((sequence) => sequence.element.role === role)
@@ -120,33 +125,38 @@ export type CaptionClip = {
 	type: ContentType;
 };
 
+export type CaptionRow = {
+	key: string;
+	label: string;
+	icon: IconComponent;
+	kind: "captions";
+	clips: CaptionClip[];
+};
+
 /** One clip per caption line, as the player shows it. */
-function linesOf(
-	{ element, start, duration }: Sequence,
-	lineMs: number,
-): CaptionClip[] {
+function linesOf({ element, start }: Sequence, lineMs: number): CaptionClip[] {
 	const { captions } = element;
 	if (!captions) return [];
-	return captionLines(captions, lineMs).flatMap((line) => {
-		const end = Math.min(line.end, duration);
-		if (end <= line.start) return [];
-		return {
-			key: `${element.id}-${start}-${line.start}`,
-			start: start + line.start,
-			duration: end - line.start,
-			text: captions.words
-				.slice(line.from, line.to)
-				.map((word) => word.text)
-				.join(" "),
-			type: element.type,
-		};
-	});
+	return captionLines(captions, lineMs).map((line) => ({
+		key: `${element.id}-${start}-${line.start}`,
+		start: start + line.start,
+		duration: line.end - line.start,
+		text: captions.words
+			.slice(line.from, line.to)
+			.map((word) => word.text)
+			.join(" "),
+		type: element.type,
+	}));
 }
 
-export function buildCaptionLanes(layout: RenderLayout): CaptionClip[][] {
+export function buildCaptionRows(layout: RenderLayout): CaptionRow[] {
 	const clips = layoutSequences(layout)
 		.flatMap((sequence) => linesOf(sequence, layout.captionStyle.lineMs))
 		.filter(({ start }) => start < layout.totalDurationSec)
 		.sort((a, b) => a.start - b.start);
-	return packLanes(clips);
+	return packLanes(clips).map((lane, index) => ({
+		key: `captions-${index}`,
+		...CAPTION_ROW,
+		clips: lane,
+	}));
 }

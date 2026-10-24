@@ -1,4 +1,5 @@
-import type { ComponentPropsWithoutRef, CSSProperties, ReactNode } from "react";
+import { Slot } from "radix-ui";
+import type { CSSProperties, ReactNode } from "react";
 import type { CaptionWord } from "@/lib/captions/caption-layout";
 import { captionFontStack } from "@/lib/captions/caption-fonts";
 import {
@@ -64,6 +65,24 @@ export function captionWordStyle(style: CaptionTextStyle): CSSProperties {
 	};
 }
 
+export function CaptionWords({
+	style,
+	words,
+}: {
+	style: CaptionStyle;
+	words: readonly CaptionWord[];
+}) {
+	return words.map((word, i) => (
+		<span
+			// Words repeat within a line, so the position is the identity.
+			key={i}
+			style={captionWordStyle(word.active ? style.activeWord : style.base)}
+		>
+			{word.text}
+		</span>
+	));
+}
+
 /**
  * Draws one caption line over its parent (which must be positioned). Shared by
  * the Remotion composition and the editor's style previews, so it takes an
@@ -73,16 +92,20 @@ export function CaptionOverlay({
 	style,
 	words,
 	fontSizePx,
-	lineProps,
-	children,
+	lineClassName,
+	asChild = false,
+	children = <CaptionWords style={style} words={words} />,
 }: {
 	style: CaptionStyle;
 	words: readonly CaptionWord[];
 	fontSizePx: number;
-	lineProps?: ComponentPropsWithoutRef<"div">;
+	lineClassName?: string;
+	/** Draws the line as `children`, such as a button, instead of a div. */
+	asChild?: boolean;
 	children?: ReactNode;
 }) {
 	if (words.length === 0) return null;
+	const Line = asChild ? Slot.Root : "div";
 
 	return (
 		<div
@@ -97,8 +120,8 @@ export function CaptionOverlay({
 				userSelect: "none",
 			}}
 		>
-			<div
-				{...lineProps}
+			<Line
+				className={lineClassName}
 				style={{
 					display: "flex",
 					flexWrap: "wrap",
@@ -116,19 +139,8 @@ export function CaptionOverlay({
 					textTransform: TRANSFORM[style.casing],
 				}}
 			>
-				{children ??
-					words.map((word, i) => (
-						<span
-							// Words repeat within a line, so the position is the identity.
-							key={i}
-							style={captionWordStyle(
-								word.active ? style.activeWord : style.base,
-							)}
-						>
-							{word.text}
-						</span>
-					))}
-			</div>
+				{children}
+			</Line>
 		</div>
 	);
 }

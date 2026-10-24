@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CaptionOverlay } from "@/components/captions/caption-overlay";
-import { captionPages, wordsOnLine } from "@/lib/captions/caption-layout";
+import { groupIntoLines, wordsOnLine } from "@/lib/captions/caption-layout";
 import type { CaptionStyle } from "@/lib/captions/caption-style";
 
 const WORD_MS = 420;
@@ -55,14 +55,19 @@ export function CaptionStage({
 	fontSizePx: number;
 	lineMs?: number;
 }) {
-	const line = captionPages(
-		words.map((text, at) => ({
-			text,
-			start: (at * WORD_MS) / 1000,
-			end: ((at + 1) * WORD_MS) / 1000,
-		})),
-		lineMs,
-	).find(({ to }) => activeIndex < to);
+	const lines = useMemo(
+		() =>
+			groupIntoLines(
+				words.map((text, at) => ({
+					text,
+					start: (at * WORD_MS) / 1000,
+					end: ((at + 1) * WORD_MS) / 1000,
+				})),
+				lineMs,
+			),
+		[words, lineMs],
+	);
+	const line = lines.find(({ to }) => activeIndex < to);
 	return (
 		<div
 			className="relative shrink-0 overflow-hidden rounded-lg bg-on-media"

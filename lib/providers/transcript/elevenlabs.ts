@@ -57,11 +57,12 @@ export class ElevenLabsTranscript
 			},
 		);
 		const textTimestamps = toTimestamps(words);
-		const durationSec = audioDurationSecs ?? textTimestamps.at(-1)?.end ?? 0;
+		if (audioDurationSecs === undefined)
+			throw new Error("ElevenLabs reported no audio duration");
 		return {
 			textTimestamps,
-			costUsd: (durationSec / 3600) * USD_PER_HOUR,
-			metadata: { durationSec },
+			costUsd: (audioDurationSecs / 3600) * USD_PER_HOUR,
+			metadata: { durationSec: audioDurationSecs },
 		};
 	}
 }

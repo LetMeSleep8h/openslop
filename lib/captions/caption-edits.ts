@@ -47,10 +47,13 @@ export function resetCaptions({
 }
 
 /** A transcript's words replace the clip's, edits and all. */
-export const withTranscript = (
+export function withTranscript(
 	{ generatedTextTimestamps: _edits, ...clip }: AssetResult,
-	{ textTimestamps = [] }: AssetResult,
-): AssetResult => ({ ...clip, textTimestamps });
+	{ textTimestamps }: AssetResult,
+): AssetResult {
+	if (!textTimestamps) throw new Error("This transcript has no words");
+	return { ...clip, textTimestamps };
+}
 
 export function removeCaptions({
 	textTimestamps,

@@ -5,7 +5,7 @@ import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import type { prefetch as PrefetchFn } from "remotion";
 import type {
-	ResolvedElement,
+	LaidOutElement,
 	Sequence,
 	RenderLayout,
 } from "@/lib/render/types";
@@ -34,7 +34,7 @@ function handleRejecting(): PrefetchHandle {
 	} as unknown as PrefetchHandle;
 }
 
-function el(url: string): ResolvedElement {
+function el(url: string): LaidOutElement {
 	return {
 		id: url,
 		type: "image",
@@ -54,7 +54,7 @@ function el(url: string): ResolvedElement {
 	};
 }
 
-function seq(element: ResolvedElement): Sequence {
+function seq(element: LaidOutElement): Sequence {
 	return { element, start: 0, duration: 1 };
 }
 

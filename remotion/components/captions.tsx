@@ -1,6 +1,9 @@
 import { use, useMemo } from "react";
 import { Sequence, useCurrentFrame, useVideoConfig } from "remotion";
-import { CaptionLineContext } from "@/components/captions/caption-line";
+import {
+	CaptionLineContext,
+	type CaptionLineProps,
+} from "@/components/captions/caption-line";
 import { createRequiredContext } from "@/lib/components/create-required-context";
 import {
 	activeWordIndex,
@@ -13,7 +16,7 @@ import {
 	type CaptionStyle,
 } from "@/lib/captions/caption-style";
 import { toFrames, toSeconds } from "@/lib/render/frames";
-import type { ResolvedCaptions, ResolvedElement } from "@/lib/render/types";
+import type { LaidOutCaptions } from "@/lib/render/types";
 
 // Caption styling applies to every caption in the composition, so it rides a
 // provider rather than threading through the sequence layers that never read it.
@@ -23,6 +26,8 @@ const [CaptionStyleContext, useCaptionStyle] =
 export const CaptionStyleProvider = CaptionStyleContext.Provider;
 
 type Words = { text: string[]; startTimes: number[] };
+
+type Clip = CaptionLineProps["clip"];
 
 function Line({
 	line,
@@ -36,7 +41,7 @@ function Line({
 	startFrame: number;
 	words: Words;
 	firstWord: number;
-	clip: Pick<ResolvedElement, "id" | "sceneId">;
+	clip: Clip;
 	style: CaptionStyle;
 }) {
 	const renderLine = use(CaptionLineContext);
@@ -50,8 +55,7 @@ function Line({
 		style,
 		words: wordsOnLine(words.text, index, line),
 		fontSizePx: captionFontSizePx(style.fontSize, height),
-		clipId: clip.id,
-		sceneId: clip.sceneId,
+		clip,
 		from: firstWord + line.from,
 		to: firstWord + line.to,
 	});
@@ -61,8 +65,8 @@ export function Captions({
 	captions,
 	clip,
 }: {
-	captions: ResolvedCaptions;
-	clip: Pick<ResolvedElement, "id" | "sceneId">;
+	captions: LaidOutCaptions;
+	clip: Clip;
 }) {
 	const style = useCaptionStyle();
 	const { fps } = useVideoConfig();

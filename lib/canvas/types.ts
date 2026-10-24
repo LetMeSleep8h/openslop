@@ -17,7 +17,7 @@ export type ContentSpec = {
 	outputKind: ResultKind;
 	role: ElementRole;
 	layer: LayerType;
-	captions?: "speech" | "video";
+	captionSource?: "speech" | "video";
 };
 
 export const CONTENT_TYPES = {
@@ -26,14 +26,14 @@ export const CONTENT_TYPES = {
 		outputKind: "audio",
 		role: "overlay",
 		layer: "audio",
-		captions: "speech",
+		captionSource: "speech",
 	},
 	character: {
 		connector: "tts",
 		outputKind: "audio",
 		role: "overlay",
 		layer: "audio",
-		captions: "speech",
+		captionSource: "speech",
 	},
 	image: {
 		connector: "image",
@@ -46,7 +46,7 @@ export const CONTENT_TYPES = {
 		outputKind: "video",
 		role: "foreground",
 		layer: "visual",
-		captions: "video",
+		captionSource: "video",
 	},
 	sound: {
 		connector: "sfx",
@@ -64,14 +64,15 @@ export const CONTENT_TYPES = {
 
 export type ContentType = keyof typeof CONTENT_TYPES;
 
-/** Speech is always captioned; a video only while no speech plays over it. */
-export function captionsOf(type: ContentType): ContentSpec["captions"] {
+export function captionSourceOf(
+	type: ContentType,
+): ContentSpec["captionSource"] {
 	const spec: ContentSpec = CONTENT_TYPES[type];
-	return spec.captions;
+	return spec.captionSource;
 }
 
 export const hasCaptions = (type: ContentType): boolean =>
-	captionsOf(type) !== undefined;
+	captionSourceOf(type) !== undefined;
 
 const ALL_CONTENT_TYPES = Object.keys(CONTENT_TYPES) as ContentType[];
 

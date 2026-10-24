@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import type { Trim } from "@/lib/render/clip-trim";
-import type { ResolvedElement } from "@/lib/render/types";
+import type { LaidOutElement } from "@/lib/render/types";
 import { TimelineClip } from "../timeline-clip";
 
 const PX_PER_SEC = 10;
 
-const element = (over: Partial<ResolvedElement> = {}): ResolvedElement => ({
+const element = (over: Partial<LaidOutElement> = {}): LaidOutElement => ({
 	id: "video",
 	type: "video",
 	role: "foreground",
@@ -25,7 +25,7 @@ const element = (over: Partial<ResolvedElement> = {}): ResolvedElement => ({
 	...over,
 });
 
-const markup = (el: ResolvedElement, duration: number, trim: Trim = el) =>
+const markup = (el: LaidOutElement, duration: number, trim: Trim = el) =>
 	renderToStaticMarkup(
 		<TimelineClip
 			clip={{ key: "clip", element: el, start: 0, duration }}
@@ -37,7 +37,7 @@ const markup = (el: ResolvedElement, duration: number, trim: Trim = el) =>
 		/>,
 	);
 
-const sources = (el: ResolvedElement, duration: number, trim: Trim = el) =>
+const sources = (el: LaidOutElement, duration: number, trim: Trim = el) =>
 	[...markup(el, duration, trim).matchAll(/<video src="([^"]*)"/g)].map(
 		([, src]) => src,
 	);

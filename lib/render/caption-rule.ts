@@ -1,29 +1,46 @@
-import { captionsOf } from "@/lib/canvas/types";
-import type { Sequence } from "./types";
+import mapValues from "lodash/mapValues";
+import { captionSourceOf } from "@/lib/canvas/types";
+import { layoutSequences, secUntilNextScene } from "./sequences";
+import type {
+	DraftSequence,
+	RenderLayout,
+	Sequence,
+	SequenceMap,
+} from "./types";
 
-const overlaps = (a: Sequence, b: Sequence) =>
+const overlaps = (a: DraftSequence, b: DraftSequence) =>
 	a.start < b.start + b.duration && b.start < a.start + a.duration;
 
-/** A video with speech over it shows none of its own captions; every caption stops short of the tail the next scene's transition steals. */
-export function applyCaptionRule(
-	sequences: Sequence[],
-	transitionSec: number,
-): void {
-	const captioned = sequences.filter((sequence) => sequence.element.captions);
-	const speech = captioned.filter(
-		({ element }) => captionsOf(element.type) === "speech",
+/** Speech is always captioned, a video only with no speech over it; captions stop where the next scene begins. */
+export function withCaptionRule(layout: {
+	series: DraftSequence[];
+	sequences: SequenceMap<DraftSequence>;
+}): Pick<RenderLayout, "series" | "sequences"> {
+	const speech = layoutSequences(layout).filter(
+		({ element }) =>
+			element.captions && captionSourceOf(element.type) === "speech",
 	);
-	for (const sequence of captioned) {
+	const layOut = (sequence: DraftSequence): Sequence => {
 		const { captions, type } = sequence.element;
 		const spokenOver =
-			captionsOf(type) === "video" &&
+			captionSourceOf(type) === "video" &&
 			speech.some((other) => overlaps(sequence, other));
-		sequence.element = {
-			...sequence.element,
-			captions:
-				captions && !spokenOver
-					? { ...captions, untilSec: sequence.duration - transitionSec }
-					: undefined,
+		return {
+			...sequence,
+			element: {
+				...sequence.element,
+				captions:
+					captions && !spokenOver
+						? {
+								...captions,
+								untilSec: secUntilNextScene(sequence, layout.series),
+							}
+						: undefined,
+			},
 		};
-	}
+	};
+	return {
+		series: layout.series.map(layOut),
+		sequences: mapValues(layout.sequences, (list) => list?.map(layOut)),
+	};
 }

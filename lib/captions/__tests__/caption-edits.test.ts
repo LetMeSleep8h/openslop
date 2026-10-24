@@ -5,7 +5,7 @@ import {
 	resetCaptions,
 	reviseWords,
 	withTranscript,
-} from "../revise-words";
+} from "../caption-edits";
 
 const song = ["the", "quick", "fox", "ran", "over", "the", "lazy", "dog"].map(
 	(text, at) => ({ text, start: at, end: at + 1 }),
@@ -37,6 +37,7 @@ describe("editCaptions", () => {
 		expect(
 			withTranscript(edited, { durationSec: 8, textTimestamps: heard }),
 		).toEqual({ durationSec: 8, textTimestamps: heard });
+		expect(() => withTranscript(edited, { durationSec: 8 })).toThrow();
 	});
 });
 

@@ -544,7 +544,10 @@ describe("GenerationQueue", () => {
 			generationQueue.enqueueGraph([makeJob("rv1", [], made)]);
 			await vi.runAllTimersAsync();
 
-			generationQueue.reviseResult("rv1", () => edited);
+			generationQueue.reviseResult(
+				{ id: "rv1", type: "narration" },
+				() => edited,
+			);
 
 			expect(generationQueue.getElementSnapshot("rv1")).toMatchObject({
 				result: edited,
@@ -571,16 +574,22 @@ describe("GenerationQueue", () => {
 			generateMock.mockReturnValue(new Promise(() => {}));
 			generationQueue.enqueueGraph([makeJob("rv3", [], inputsFor("hi"))]);
 
-			expect(() => generationQueue.reviseResult("rv3", () => edited)).toThrow(
-				/generating/,
-			);
+			expect(() =>
+				generationQueue.reviseResult(
+					{ id: "rv3", type: "narration" },
+					() => edited,
+				),
+			).toThrow(/generating/);
 			generationQueue.discard("rv3");
 		});
 
 		it("refuses an element with no result to edit", () => {
-			expect(() => generationQueue.reviseResult("rv2", () => edited)).toThrow(
-				/no result/,
-			);
+			expect(() =>
+				generationQueue.reviseResult(
+					{ id: "rv2", type: "narration" },
+					() => edited,
+				),
+			).toThrow(/no result/);
 		});
 	});
 

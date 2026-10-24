@@ -3,7 +3,8 @@ import type { AssetResult, ModelRef } from "@/lib/connectors/types";
 import type { GenerationNode, NodeId } from "@/lib/generation/graph";
 import type { GenerationQueue } from "@/lib/generation/queue";
 import { isGenerationActive } from "@/lib/generation/snapshots";
-import { withTranscript } from "./revise-words";
+import type { CommittedVersion } from "@/lib/generation/versions";
+import { withTranscript } from "./caption-edits";
 
 const SUFFIX = ":captions";
 
@@ -35,20 +36,26 @@ export function captionsNode(
 	};
 }
 
-/** A transcript lands on the take it was made from and leaves no result of its own; a clip remade meanwhile fails it. */
-export const landCaptions = (queue: GenerationQueue) =>
-	queue.onCommitted(({ elementId, inputs, result }) => {
-		const clipId = clipOf(elementId);
-		if (!clipId) return;
+/** Records each commit, but lands a transcript on its clip instead of keeping it as a version. */
+export const withCaptionsLanding =
+	(queue: GenerationQueue, record: (version: CommittedVersion) => void) =>
+	(version: CommittedVersion) => {
+		const clipId = clipOf(version.elementId);
+		if (!clipId) return record(version);
 		const clip = queue.getElementSnapshot(clipId);
 		if (
 			!clip.result ||
 			isGenerationActive(clip.status) ||
-			soundOf(clip.result) !== inputs.attributes.mediaUrl
+			soundOf(clip.result) !== version.inputs.attributes.mediaUrl
 		) {
-			queue.setError(elementId, "The clip changed while it was captioned");
+			queue.setError(
+				version.elementId,
+				"The clip changed while it was captioned",
+			);
 			return;
 		}
-		queue.reviseResult(clipId, (current) => withTranscript(current, result));
-		queue.discard(elementId);
-	});
+		queue.reviseResult({ id: clipId, type: version.elementType }, (current) =>
+			withTranscript(current, version.result),
+		);
+		queue.discard(version.elementId);
+	};

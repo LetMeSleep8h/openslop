@@ -2,7 +2,6 @@
 
 import { useMemo, useRef, useState, type ReactNode } from "react";
 import {
-	Captions,
 	RotateCcw,
 	Timeline as TimelineIcon,
 	ZoomIn,
@@ -24,9 +23,9 @@ import { TimelinePlayhead } from "./timeline-playhead";
 import { GUTTER_PX, LANE_HEIGHT, RULER_HEIGHT } from "../dock-layout";
 import { TimelineRuler } from "./timeline-ruler";
 import {
-	buildCaptionLanes,
+	buildCaptionRows,
 	buildTimelineRows,
-	type CaptionClip,
+	type CaptionRow,
 	type TimelineClip as TimelineClipData,
 	type TimelineRow,
 } from "./timeline-rows";
@@ -146,18 +145,18 @@ function Track({
 }
 
 function CaptionTrack({
-	clips,
+	row,
 	pxPerSec,
 	onSeek,
 }: {
-	clips: CaptionClip[];
+	row: CaptionRow;
 	pxPerSec: number;
 	onSeek: (seconds: number) => void;
 }) {
 	return (
-		<Lane kind="captions" className="relative">
-			<ul aria-label="Captions" className="absolute inset-0">
-				{clips.map(({ key, start, duration, text, type }) => (
+		<Lane kind={row.kind} className="relative">
+			<ul aria-label={row.label} className="absolute inset-0">
+				{row.clips.map(({ key, start, duration, text, type }) => (
 					<li
 						key={key}
 						className="absolute inset-y-0.5"
@@ -204,7 +203,7 @@ export function Timeline() {
 		width: viewportWidth,
 	} = useElementWidth<HTMLDivElement>();
 	const rows = useMemo(() => buildTimelineRows(layout), [layout]);
-	const captionLanes = useMemo(() => buildCaptionLanes(layout), [layout]);
+	const captionRows = useMemo(() => buildCaptionRows(layout), [layout]);
 	const { zoom, pxPerSec, zoomIn, zoomOut, canZoomIn, canZoomOut } =
 		useTimelineZoom(
 			layout.totalDurationSec,
@@ -297,10 +296,10 @@ export function Timeline() {
 					</div>
 
 					<div style={{ gridArea: "2 / 2" }}>
-						{captionLanes.map((clips, index) => (
+						{captionRows.map((row) => (
 							<CaptionTrack
-								key={index}
-								clips={clips}
+								key={row.key}
+								row={row}
 								pxPerSec={pxPerSec}
 								onSeek={seek}
 							/>
@@ -335,16 +334,7 @@ export function Timeline() {
 						style={{ gridArea: "2 / 1" }}
 						className="sticky left-0 z-30 border-r border-border bg-element-card"
 					>
-						{captionLanes.map((_, index) => (
-							<Lane
-								key={index}
-								kind="captions"
-								className="flex items-center justify-center text-muted-foreground"
-							>
-								<Captions size={14} />
-							</Lane>
-						))}
-						{rows.map((row) => (
+						{[...captionRows, ...rows].map((row) => (
 							<Lane
 								key={row.key}
 								kind={row.kind}

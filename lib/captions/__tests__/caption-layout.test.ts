@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
 	activeWordIndex,
 	captionLines,
-	captionPages,
+	groupIntoLines,
 	wordsOnLine,
 } from "../caption-layout";
 
@@ -27,9 +27,9 @@ describe("activeWordIndex", () => {
 	});
 });
 
-describe("captionPages", () => {
+describe("groupIntoLines", () => {
 	it("gathers words into a line until it has run the line length", () => {
-		expect(spans(captionPages(timed, 1500))).toEqual([
+		expect(spans(groupIntoLines(timed, 1500))).toEqual([
 			["one", "two"],
 			["three", "four"],
 			["five"],
@@ -43,19 +43,19 @@ describe("captionPages", () => {
 			...timed.slice(1),
 		];
 		expect(
-			captionPages(blank, 0).map(({ from, to }) =>
+			groupIntoLines(blank, 0).map(({ from, to }) =>
 				blank.slice(from, to).map((word) => word.text),
 			),
 		).toEqual(WORDS.map((w) => [w]));
 	});
 
 	it("shows one word at a time at a line length of 0", () => {
-		expect(spans(captionPages(timed, 0))).toEqual(WORDS.map((w) => [w]));
+		expect(spans(groupIntoLines(timed, 0))).toEqual(WORDS.map((w) => [w]));
 	});
 
 	it("holds each line until the next one starts, the last until its last word ends", () => {
 		expect(
-			captionPages(timed, 1500).map(({ start, end }) => [start, end]),
+			groupIntoLines(timed, 1500).map(({ start, end }) => [start, end]),
 		).toEqual([
 			[0, 2],
 			[2, 4],

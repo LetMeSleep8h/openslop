@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { useSlateStatic } from "slate-react";
 import { captionsNode, captionsNodeId } from "@/lib/captions/captions-job";
-import { removeCaptions, resetCaptions } from "@/lib/captions/revise-words";
+import { removeCaptions, resetCaptions } from "@/lib/captions/caption-edits";
 import type { GeneratedElement } from "@/lib/canvas/types";
 import { resolveModel } from "@/lib/connectors/models";
 import type { AssetResult } from "@/lib/connectors/types";
@@ -11,7 +11,7 @@ import {
 } from "@/lib/generation/generation-queue-provider";
 
 /** Queues a transcript of each clip's take, on the project's Speech to Text pick at the time. */
-export function useCaptionClips() {
+export function useTranscribeClips() {
 	const queue = useGenerationQueue();
 	const editor = useSlateStatic();
 	return useCallback(
@@ -36,19 +36,19 @@ export function useClipCaptions(
 	clip: AssetResult | null,
 ) {
 	const queue = useGenerationQueue();
-	const caption = useCaptionClips();
+	const transcribe = useTranscribeClips();
 	const { status, error } = useQueueSelector((q) =>
 		q.getElementSnapshot(captionsNodeId(element.id)),
 	);
 	const revise = (change: (result: AssetResult) => AssetResult) => () =>
-		queue.reviseResult(element.id, change);
+		queue.reviseResult(element, change);
 
 	return {
 		captioned: clip?.textTimestamps !== undefined,
 		edited: Boolean(clip?.generatedTextTimestamps),
 		status,
 		error,
-		generate: () => caption([element]),
+		generate: () => transcribe([element]),
 		remove: revise(removeCaptions),
 		reset: revise(resetCaptions),
 	};

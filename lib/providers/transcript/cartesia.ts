@@ -51,11 +51,12 @@ export class CartesiaTranscript
 			start,
 			end,
 		}));
-		const durationSec = duration ?? textTimestamps.at(-1)?.end ?? 0;
+		if (duration == null)
+			throw new Error("Cartesia reported no audio duration");
 		return {
 			textTimestamps,
-			costUsd: durationSec * USD_PER_SECOND,
-			metadata: { durationSec },
+			costUsd: duration * USD_PER_SECOND,
+			metadata: { durationSec: duration },
 		};
 	}
 }

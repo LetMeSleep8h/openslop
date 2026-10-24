@@ -1,14 +1,15 @@
 import {
 	DEFAULT_CONFIG,
+	type DraftSequence,
 	type ResolvedElement,
-	type Sequence,
+	type SequenceMap,
 	type VideoConfig,
 	type RenderLayout,
 } from "./types";
 import { ASPECT_RATIO_DIMENSIONS } from "../project/aspect-ratio";
 import type { VideoSettings } from "../project/video-settings";
 import { blankScene } from "./blank-scene";
-import { applyCaptionRule } from "./caption-rule";
+import { withCaptionRule } from "./caption-rule";
 import { loopStrideSec } from "./audio-fade";
 import { toFrames, toSeconds } from "./frames";
 import { transitionOverlapSec } from "./transitions";
@@ -29,21 +30,11 @@ function createSequence(
 	element: ResolvedElement,
 	start: number,
 	duration: number,
-): Sequence {
+): DraftSequence {
 	return { element, start, duration: Math.max(duration, MIN_DURATION_SEC) };
 }
 
-type SequenceMap = RenderLayout["sequences"];
-
-export const layoutSequences = ({
-	series,
-	sequences,
-}: Pick<RenderLayout, "series" | "sequences">): Sequence[] => [
-	...series,
-	...Object.values(sequences).flatMap((list) => list ?? []),
-];
-
-type SceneSequence = Sequence & { overlaySec: number };
+type SceneSequence = DraftSequence & { overlaySec: number };
 
 /**
  * Lays down `element.loops` copies, each `stride` after the last. A stride
@@ -51,7 +42,7 @@ type SceneSequence = Sequence & { overlaySec: number };
  * across its seam rather than cutting.
  */
 function pushSequence(
-	sequences: SequenceMap,
+	sequences: SequenceMap<DraftSequence>,
 	element: ResolvedElement,
 	start: number,
 	stride: number,
@@ -62,14 +53,17 @@ function pushSequence(
 	}
 }
 
-function trimSequencesAt(list: Sequence[] | undefined, cutoff: number) {
+function trimSequencesAt(list: DraftSequence[] | undefined, cutoff: number) {
 	if (!list) return;
 	while (list.length > 0 && list[list.length - 1].start >= cutoff) list.pop();
 	const last = list.at(-1);
 	if (last) last.duration = Math.min(last.duration, cutoff - last.start);
 }
 
-function getForegroundCursor(current: Sequence | undefined, cursor: number) {
+function getForegroundCursor(
+	current: DraftSequence | undefined,
+	cursor: number,
+) {
 	return current ? Math.max(cursor, current.start + current.duration) : cursor;
 }
 
@@ -101,7 +95,7 @@ export function buildRenderLayout(
 		toSeconds(toFrames(sec, config.fps), config.fps);
 	const transitionDurationSec = onGrid(transitionOverlapSec(transitionType));
 	const series: SceneSequence[] = [];
-	const sequences: SequenceMap = {};
+	const sequences: SequenceMap<DraftSequence> = {};
 	let cursor = 0;
 
 	for (const raw of elements) {
@@ -165,15 +159,9 @@ export function buildRenderLayout(
 		}
 	}
 
-	applyCaptionRule(
-		layoutSequences({ series, sequences }),
-		transitionDurationSec,
-	);
-
 	return {
 		...config,
-		series,
-		sequences,
+		...withCaptionRule({ series, sequences }),
 		totalDurationSec,
 		totalFrames: Math.max(
 			2,

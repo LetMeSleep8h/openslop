@@ -1,3 +1,4 @@
+import type { ElementType } from "@/lib/canvas/types";
 import type { AssetConnectorType, AssetResult } from "../connectors/types";
 import { errorMessage } from "../errors";
 import { createEmitter } from "../store/emitter";
@@ -127,9 +128,9 @@ export class GenerationQueue {
 		});
 	}
 
-	/** An edit answers to the inputs of the result it edits, so it goes stale with it. Never while a run would land over it. */
+	/** An edit keeps the inputs of the result it edits, so it goes stale with it. */
 	reviseResult(
-		elementId: string,
+		{ id: elementId, type: elementType }: { id: string; type: ElementType },
 		revise: (result: AssetResult) => AssetResult,
 	): void {
 		const { result, resultInputs, connectorType, pinned } =
@@ -140,6 +141,7 @@ export class GenerationQueue {
 			throw new Error(`Element "${elementId}" is generating`);
 		this.commit({
 			elementId,
+			elementType,
 			connectorType,
 			inputs: resultInputs,
 			result: revise(result),
@@ -153,7 +155,7 @@ export class GenerationQueue {
 		result,
 		connectorType,
 		pinned,
-	}: CommittedVersion): void {
+	}: Omit<CommittedVersion, "elementType">): void {
 		this.snapshots.update(elementId, {
 			result,
 			error: null,

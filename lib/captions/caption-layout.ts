@@ -27,7 +27,7 @@ export const wordsOnLine = (
 		.map((text, index) => ({ text, active: from + index === wordIndex }));
 
 /** Words join a line until it has run `lineMs`; each line holds until the next one starts. */
-export function captionPages(
+export function groupIntoLines(
 	words: readonly TextTimestamp[],
 	lineMs: number,
 ): CaptionLine[] {
@@ -63,17 +63,14 @@ export function captionPages(
 
 /** The lines a clip shows, the last held until its captions stop. */
 export function captionLines(
-	{
-		words,
-		untilSec = Infinity,
-	}: { words: readonly TextTimestamp[]; untilSec?: number },
+	{ words, untilSec }: { words: readonly TextTimestamp[]; untilSec: number },
 	lineMs: number,
 ): CaptionLine[] {
-	const lines = captionPages(words, lineMs);
-	return lines.flatMap((line, index) => {
-		const end = index === lines.length - 1 ? untilSec : line.end;
-		return line.start < untilSec
-			? [{ ...line, end: Math.min(end, untilSec) }]
-			: [];
-	});
+	const lines = groupIntoLines(words, lineMs).filter(
+		(line) => line.start < untilSec,
+	);
+	return lines.map((line, index) => ({
+		...line,
+		end: index === lines.length - 1 ? untilSec : Math.min(line.end, untilSec),
+	}));
 }

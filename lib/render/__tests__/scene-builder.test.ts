@@ -678,11 +678,18 @@ describe("the caption rule", () => {
 		expect(layoutOf([video]).series[0].element.captions?.untilSec).toBe(10);
 	});
 
-	it("stops captions short of the tail the next scene's transition steals", () => {
-		const layout = layoutOf([video], { transitionType: "fade" });
-		const [{ element, duration }] = layout.series;
-		expect(element.captions?.untilSec).toBe(
-			duration - layout.transitionDurationSec,
+	it("stops captions where the next scene begins, and holds the last scene's to its end", () => {
+		const next = el({
+			id: "vid2",
+			type: "video",
+			durationSec: 10,
+			captions: captions(),
+		});
+		const layout = layoutOf([video, next], { transitionType: "fade" });
+		const [first, last] = layout.series;
+		expect(first.element.captions?.untilSec).toBeCloseTo(
+			first.duration - layout.transitionDurationSec,
 		);
+		expect(last.element.captions?.untilSec).toBe(last.duration);
 	});
 });
