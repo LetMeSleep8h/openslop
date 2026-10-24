@@ -88,7 +88,7 @@ export function CaptionsPanel() {
 					<>
 						<PanelField
 							label={SPEECH_TO_TEXT.label}
-							info="Applies to clips you caption from now on. Existing captions keep the model they were made with."
+							info="Existing captions are unaffected."
 						>
 							<ModelDefaultControl
 								types={SPEECH_TO_TEXT.types}
