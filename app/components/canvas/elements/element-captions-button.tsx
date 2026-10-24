@@ -1,5 +1,6 @@
 "use client";
 
+import compact from "lodash/compact";
 import { useState, type ReactNode } from "react";
 import { ActionMenu, type ActionMenuItem } from "@/components/ui/action-menu";
 import { ConfirmDeleteDialog } from "@/components/ui/confirm-delete-dialog";
@@ -81,7 +82,7 @@ function FaceButton({ face }: { face: Face }) {
 }
 
 function menuOf(captions: Captions, onRemove: () => void): ActionMenuItem[] {
-	const items: (ActionMenuItem | false)[] = [
+	return compact([
 		{
 			key: "regenerate",
 			label: "Regenerate captions",
@@ -101,8 +102,7 @@ function menuOf(captions: Captions, onRemove: () => void): ActionMenuItem[] {
 			variant: "destructive",
 			onSelect: onRemove,
 		},
-	];
-	return items.filter((item) => item !== false);
+	]);
 }
 
 export function ElementCaptionsButton({
