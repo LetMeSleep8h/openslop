@@ -9,5 +9,5 @@ export const TRANSCRIPT_MODELS = {
 
 export const DEFAULT_TRANSCRIPT_MODEL: ModelRef = {
 	provider: "openslop",
-	model: "Slop Transcript v1",
+	model: "Slop STT v1",
 };

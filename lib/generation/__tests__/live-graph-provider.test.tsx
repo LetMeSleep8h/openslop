@@ -29,9 +29,6 @@ let buildContext = contextNow();
 vi.mock("../use-build-context", () => ({
 	useBuildContext: () => buildContext,
 }));
-vi.mock("@/lib/connectors/use-default-models", () => ({
-	useModelChain: () => ({}),
-}));
 vi.mock("@/lib/project/use-project", async () => {
 	const { useStore } = await import("zustand");
 	return {

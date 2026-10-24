@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { MODEL_GROUPS, groupFor, groupModels } from "../model-groups";
+import { MODEL_GROUPS, groupFor } from "../model-groups";
 import { MODELS } from "../models";
 import { CONNECTOR_TYPES } from "../types";
 
@@ -9,30 +9,18 @@ describe("MODEL_GROUPS", () => {
 		expect([...covered].sort()).toEqual([...CONNECTOR_TYPES].sort());
 	});
 
-	// One control sets the whole group, so every type in it must run on the
-	// same providers, each writing the pick only where its catalog offers it.
-	it("only groups types served by the same providers", () => {
+	// One control sets the whole group, so the types it covers have to offer the
+	// same models — otherwise it would write a model one of them cannot run.
+	it("only groups types that pick from the same catalog", () => {
 		for (const { key, types } of MODEL_GROUPS) {
 			const [first, ...rest] = types;
 			for (const type of rest) {
-				expect(
-					{ key, providers: Object.keys(MODELS[type]) },
-					`${key} spans providers`,
-				).toEqual({ key, providers: Object.keys(MODELS[first]) });
+				expect({ key, models: MODELS[type] }, `${key} spans catalogs`).toEqual({
+					key,
+					models: MODELS[first],
+				});
 			}
 		}
-	});
-
-	it("leaves a type out of a pick its catalog does not offer", () => {
-		expect(
-			groupModels(["voice", "tts", "transcript"], {
-				provider: "cartesia",
-				model: "Sonic 3.6",
-			}),
-		).toEqual({
-			voice: { provider: "cartesia", model: "Sonic 3.6" },
-			tts: { provider: "cartesia", model: "Sonic 3.6" },
-		});
 	});
 
 	it("finds the group a type belongs to", () => {

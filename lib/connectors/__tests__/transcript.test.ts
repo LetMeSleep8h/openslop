@@ -62,7 +62,7 @@ describe("HttpTranscriptConnector", () => {
 		]);
 
 		const result = await new HttpTranscriptConnector({
-			model: { provider: "openslop", model: "Slop Transcript v1" },
+			model: { provider: "openslop", model: "Slop STT v1" },
 		}).generate({ prompt: "", mediaUrl: "https://blob/v.mp4" });
 
 		expect(result).toEqual({ durationSec: 3, textTimestamps: words });

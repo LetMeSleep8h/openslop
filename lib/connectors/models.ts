@@ -113,16 +113,6 @@ export function resolveModel(
 	return { provider, model };
 }
 
-/** What `provider` runs `type` on; every provider of a type a derived job follows must offer one. */
-export function providerModel(
-	type: ConnectorType,
-	provider: Provider,
-): ModelRef {
-	const [model] = Object.keys(MODELS[type][provider] ?? {});
-	if (!model) throw new Error(`"${provider}" has no ${type} model`);
-	return { provider, model };
-}
-
 export function listModels(type: ConnectorType): (ModelRef & ModelEntry)[] {
 	return Object.entries(MODELS[type]).flatMap(([provider, table]) =>
 		Object.entries(table).map(([model, entry]) => ({

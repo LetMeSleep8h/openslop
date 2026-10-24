@@ -9,7 +9,7 @@ import {
 	type GeneratedElement,
 	type CanvasElement,
 } from "@/lib/canvas/types";
-import { providerModel, resolveModel } from "@/lib/connectors/models";
+import { resolveModel } from "@/lib/connectors/models";
 import { DERIVED_JOBS, type DerivedKind } from "@/lib/connectors/registry";
 import type { ConnectorPlugin } from "@/lib/connectors/types";
 import { getPromptText } from "./inputs";
@@ -59,12 +59,11 @@ function nodeSource(
 			attributes: element.generationAttributes ?? {},
 			connector: resolveElementConnector(element, ctx.registry, ctx.canvas),
 		};
-	const { connector: type, providerOf, ...config } = DERIVED_JOBS[kind];
-	const { provider } = resolveModel(providerOf, ctx.models[providerOf]);
+	const { connector: type, ...config } = DERIVED_JOBS[kind];
 	return {
 		prompt: "",
 		attributes: {},
-		connector: { type, model: providerModel(type, provider), config },
+		connector: { type, model: resolveModel(type, ctx.models[type]), config },
 	};
 }
 

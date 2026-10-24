@@ -8,11 +8,7 @@ import { createClipSoundPlugin } from "./transcript/plugins/clip-sound";
 import { createSpeakerVoicePlugin } from "./tts/plugins/speaker-voice";
 import { createVideoOutputRulesPlugin } from "./video/plugins/output-rules";
 import { createPreviousVisualPlugin } from "./video/plugins/previous-visual";
-import type {
-	AssetConnectorType,
-	ConnectorConfig,
-	ConnectorType,
-} from "./types";
+import type { AssetConnectorType, ConnectorConfig } from "./types";
 
 /** The plugins each generated type installs: all a type does that another does not. */
 export type ConnectorRegistry = Record<GeneratedType, ConnectorConfig>;
@@ -43,16 +39,12 @@ export const DEFAULT_CONNECTOR_REGISTRY: ConnectorRegistry = {
 	asset_voice: {},
 };
 
-/** Jobs run off an element's own result instead of a prompt, each on the provider of `providerOf`'s pick so no one picks it twice. */
+/** Jobs run off an element's own result instead of a prompt, on the default model for their connector. */
 export const DERIVED_JOBS = {
 	captions: {
 		connector: "transcript",
-		providerOf: "tts",
 		plugins: [createClipSoundPlugin()],
 	},
-} satisfies Record<
-	string,
-	ConnectorConfig & { connector: AssetConnectorType; providerOf: ConnectorType }
->;
+} satisfies Record<string, ConnectorConfig & { connector: AssetConnectorType }>;
 
 export type DerivedKind = keyof typeof DERIVED_JOBS;

@@ -200,7 +200,9 @@ export function TimelineCaptionClip({
 				ELEMENT_CONFIGS[type].colorClass,
 			)}
 		>
-			<span className="truncate text-badge-xs text-foreground">{text}</span>
+			<span className="truncate text-left text-badge-xs text-foreground">
+				{text}
+			</span>
 		</div>
 	);
 }

@@ -1,4 +1,5 @@
 import {
+	Captions,
 	Image as ImageIcon,
 	Music,
 	TextBox,
@@ -7,7 +8,7 @@ import {
 	Waveform,
 	type IconComponent,
 } from "@/components/ui/icon";
-import { hasModel, type ConnectorModels } from "./models";
+import type { ConnectorModels } from "./models";
 import type { ConnectorType, ModelRef } from "./types";
 
 /** What a person picks a model for. */
@@ -34,9 +35,15 @@ export const MODEL_GROUPS: ModelGroup[] = [
 	},
 	{
 		key: "voice",
-		label: "Voice",
+		label: "Text to Speech",
 		Icon: Voice,
-		types: ["voice", "tts", "transcript"],
+		types: ["voice", "tts"],
+	},
+	{
+		key: "transcript",
+		label: "Speech to Text",
+		Icon: Captions,
+		types: ["transcript"],
 	},
 	{
 		key: "sound",
@@ -65,11 +72,7 @@ export function groupFor(type: ConnectorType): ModelGroup {
 	return group;
 }
 
-/** Sets only the types that offer the pick; transcripts follow the voice's provider instead. */
 export const groupModels = (
 	types: ConnectorType[],
 	model: ModelRef,
-): ConnectorModels =>
-	Object.fromEntries(
-		types.filter((type) => hasModel(type, model)).map((type) => [type, model]),
-	);
+): ConnectorModels => Object.fromEntries(types.map((type) => [type, model]));

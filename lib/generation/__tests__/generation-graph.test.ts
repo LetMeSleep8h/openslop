@@ -172,16 +172,16 @@ describe("a derived node", () => {
 		expect(captions.job).toMatchObject({
 			elementType: "video",
 			connectorType: "transcript",
-			model: { provider: "openslop", model: "Slop Transcript v1" },
+			model: { provider: "openslop", model: "Slop STT v1" },
 		});
 	});
 
-	it("transcribes on the provider the voices are picked on", () => {
+	it("transcribes on the project's speech-to-text pick", () => {
 		const video = element("vid", "video", "a singer");
 		edit(video);
 		graph = new GenerationGraph({
 			...contextNow(),
-			models: { tts: { provider: "cartesia", model: "Sonic 3.6" } },
+			models: { transcript: { provider: "cartesia", model: "Ink Whisper" } },
 		});
 
 		expect(captionsOf(video).job.model).toEqual({

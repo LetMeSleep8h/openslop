@@ -37,7 +37,7 @@ import { CaptionPreview } from "./caption-preview";
 import { CaptionTextStyleFields } from "./caption-text-style-fields";
 import { PanelCard, PanelField } from "./panel-card";
 
-const VOICE = groupFor("transcript");
+const SPEECH_TO_TEXT = groupFor("transcript");
 
 const REVEAL_OPTIONS: MediaToggleOption<CaptionReveal>[] = [
 	{ value: "line", label: "Whole line at once", text: "Line" },
@@ -87,14 +87,14 @@ export function CaptionsPanel() {
 				{captionsEnabled && (
 					<>
 						<PanelField
-							label="Voice model"
-							info="Auto captions transcribe speech with the voice model's provider."
+							label={SPEECH_TO_TEXT.label}
+							info="Applies to clips you caption from now on. Existing captions keep the model they were made with."
 						>
 							<ModelDefaultControl
-								types={VOICE.types}
+								types={SPEECH_TO_TEXT.types}
 								tier="project"
 								chain={chain}
-								label={VOICE.label}
+								label={SPEECH_TO_TEXT.label}
 								onChange={updateModels}
 							/>
 						</PanelField>

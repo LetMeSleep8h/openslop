@@ -1,7 +1,8 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { ActionMenu, type ActionMenuItem } from "@/components/ui/action-menu";
+import { ConfirmDeleteDialog } from "@/components/ui/confirm-delete-dialog";
 import {
 	CaptionsReady,
 	CaptionsStale,
@@ -20,6 +21,7 @@ import {
 } from "@/components/ui/tooltip";
 import type { ContentElement } from "@/lib/canvas/types";
 import { useClipCaptions } from "../hooks/use-clip-captions";
+import { ELEMENT_CONFIGS } from "./element-configs";
 import { useElementGeneration } from "./element-generation-context";
 import { HeaderIconButton } from "./header-icon-button";
 
@@ -63,7 +65,7 @@ function faceOf(hasClip: boolean, captions: Captions): Face | null {
 	};
 }
 
-function menuOf(captions: Captions): ActionMenuItem[] {
+function menuOf(captions: Captions, onRemove: () => void): ActionMenuItem[] {
 	const items: (ActionMenuItem | false)[] = [
 		{
 			key: "regenerate",
@@ -81,7 +83,8 @@ function menuOf(captions: Captions): ActionMenuItem[] {
 			key: "remove",
 			label: "Remove captions",
 			icon: <Trash2 />,
-			onSelect: captions.remove,
+			variant: "destructive",
+			onSelect: onRemove,
 		},
 	];
 	return items.filter((item) => item !== false);
@@ -96,6 +99,7 @@ export function ElementCaptionsButton({
 	const { result: clip } = useElementGeneration();
 	const captions = useClipCaptions(element, clip);
 	const face = faceOf(Boolean(clip), captions);
+	const [removing, setRemoving] = useState(false);
 
 	if (face)
 		return (
@@ -117,15 +121,33 @@ export function ElementCaptionsButton({
 	const label = captions.edited ? `${state}, edited in the player` : state;
 	const Icon = captions.staleReason ? CaptionsStale : CaptionsReady;
 	return (
-		<Tooltip>
-			<ActionMenu items={menuOf(captions)} align="end">
-				<TooltipTrigger asChild>
-					<HeaderIconButton ariaLabel={label}>
-						<Icon size={SIZE} />
-					</HeaderIconButton>
-				</TooltipTrigger>
-			</ActionMenu>
-			<TooltipContent>{label}</TooltipContent>
-		</Tooltip>
+		<>
+			<Tooltip>
+				<ActionMenu
+					items={menuOf(captions, () => setRemoving(true))}
+					align="end"
+				>
+					<TooltipTrigger asChild>
+						<HeaderIconButton
+							ariaLabel={label}
+							variant={captions.staleReason ? "stale" : "quiet"}
+						>
+							<Icon size={SIZE} />
+						</HeaderIconButton>
+					</TooltipTrigger>
+				</ActionMenu>
+				<TooltipContent>{label}</TooltipContent>
+			</Tooltip>
+			<ConfirmDeleteDialog
+				target={removing ? captions : undefined}
+				onClose={() => setRemoving(false)}
+				title={() =>
+					`Remove this ${ELEMENT_CONFIGS[element.type].label.toLowerCase()}'s captions?`
+				}
+				description="Only this clip loses its captions and any edits to them. Getting them back means generating them again."
+				actionLabel="Remove captions"
+				onConfirm={({ remove }) => remove()}
+			/>
+		</>
 	);
 }

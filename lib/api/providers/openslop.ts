@@ -63,7 +63,7 @@ const OPENSLOP_PROVIDERS: {
 		"Slop Music v1": hosted("ELEVENLABS_API_KEY", ElevenLabsMusic, MockMusic),
 	},
 	transcript: {
-		"Slop Transcript v1": hosted(
+		"Slop STT v1": hosted(
 			"ELEVENLABS_API_KEY",
 			ElevenLabsTranscript,
 			MockTranscript,

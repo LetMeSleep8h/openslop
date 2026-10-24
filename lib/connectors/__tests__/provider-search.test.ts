@@ -62,7 +62,7 @@ describe("searchProviders", () => {
 	it("ignores a model match outside the browsed capability", () => {
 		expect(searchProviders("image", capabilities("voice"))).toEqual([]);
 		expect(searchProviders("slop", capabilities("voice"))).toEqual([
-			{ provider: "openslop", models: ["Slop TTS v1", "Slop Transcript v1"] },
+			{ provider: "openslop", models: ["Slop TTS v1"] },
 		]);
 	});
 
