@@ -7,7 +7,7 @@ import {
 	type IconComponent,
 } from "@/components/ui/icon";
 import { captionLines } from "@/lib/captions/caption-layout";
-import type { ContentType, ElementRole, LayerType } from "@/lib/canvas/types";
+import type { ElementRole, LayerType } from "@/lib/canvas/types";
 import { layoutSequences, secUntilNextScene } from "@/lib/render/sequences";
 import type { Sequence, RenderLayout } from "@/lib/render/types";
 
@@ -117,13 +117,8 @@ export function buildTimelineRows(layout: RenderLayout): TimelineRow[] {
 	});
 }
 
-export type CaptionClip = {
-	key: string;
-	start: number;
-	duration: number;
-	text: string;
-	type: ContentType;
-};
+/** One caption line, placed like a clip of the element it captions. */
+export type CaptionClip = TimelineClip & { text: string };
 
 export type CaptionRow = {
 	key: string;
@@ -139,13 +134,13 @@ function linesOf({ element, start }: Sequence, lineMs: number): CaptionClip[] {
 	if (!captions) return [];
 	return captionLines(captions, lineMs).map((line) => ({
 		key: `${element.id}-${start}-${line.start}`,
+		element,
 		start: start + line.start,
 		duration: line.end - line.start,
 		text: captions.words
 			.slice(line.from, line.to)
 			.map((word) => word.text)
 			.join(" "),
-		type: element.type,
 	}));
 }
 

@@ -10,11 +10,13 @@ import { sceneLabel } from "@/lib/canvas/constants";
 import { truncateMiddle } from "@/lib/format";
 import { isTrimmable, playedSec, type Trim } from "@/lib/render/clip-trim";
 import { formatTimeRange } from "@/lib/render/timestamps";
-import type { ContentType } from "@/lib/canvas/types";
 import type { ResolvedElement } from "@/lib/render/types";
 import { cn } from "@/lib/utils";
 import { ClipWaveform } from "./clip-waveform";
-import type { TimelineClip as TimelineClipData } from "./timeline-rows";
+import type {
+	CaptionClip,
+	TimelineClip as TimelineClipData,
+} from "./timeline-rows";
 
 const HEADER_ICON_SIZE = 9;
 const PX_PER_CHAR = 6;
@@ -219,24 +221,27 @@ export function TimelineClip({
 }
 
 export function TimelineCaptionClip({
-	text,
-	type,
+	clip,
+	width,
+	selected,
 }: {
-	text: string;
-	type: ContentType;
+	clip: CaptionClip;
+	width: number;
+	selected: boolean;
 }) {
 	return (
 		<div
+			role="img"
+			aria-label={`Caption, ${formatTimeRange(clip.start, clip.duration)}: ${clip.text}`}
 			className={cn(
 				FRAME,
-				"timeline-clip-surface flex-row items-center gap-1 rounded-sm border-border px-1",
-				ELEMENT_CONFIGS[type].colorClass,
+				"timeline-clip-surface justify-center",
+				ELEMENT_CONFIGS[clip.element.type].colorClass,
+				selected ? SELECTED_EDGE : "border-border",
 			)}
 		>
-			<Captions size={HEADER_ICON_SIZE} className="shrink-0" />
-			<span className="truncate text-left text-badge-xs text-foreground">
-				{text}
-			</span>
+			<ClipHeader icon={Captions} label={clip.text} width={width} />
+			{selected ? <SelectedWash /> : null}
 		</div>
 	);
 }
