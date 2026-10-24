@@ -5,7 +5,7 @@ import {
 	useGenerationQueue,
 	useQueueSelector,
 } from "@/lib/generation/generation-queue-provider";
-import { hasPrompt, type GenerationNode } from "@/lib/generation/graph";
+import { hasPrompt } from "@/lib/generation/graph";
 import { buildNodes } from "@/lib/generation/generation-graph";
 import { isGenerationActive } from "@/lib/generation/snapshots";
 import { isNodeStale, needsGeneration } from "@/lib/generation/staleness";
@@ -60,11 +60,22 @@ function describe(
 	return `Generate ${fresh} ${noun(fresh)} and regenerate ${stale} stale in this ${subject}`;
 }
 
-export function useNodeScope(
-	nodes: GenerationNode[],
-	build: () => GenerationNode[],
-): Omit<GenerateScope, "description"> {
+/**
+ * The generate control for any slice of the document. `select` reads that slice
+ * from the document as it is, and `subject` names it, so what a control says
+ * and what it queues are decided in one place. Memoize `select`.
+ */
+export function useGenerateScope(
+	select: (editor: Editor) => ContentElement[],
+	subject: GenerateSubject,
+): GenerateScope {
 	const queue = useGenerationQueue();
+	const editor = useSlateStatic();
+	const buildContext = useBuildContext();
+
+	const elements = useCallback(() => select(editor), [select, editor]);
+	const live = useLiveNodes(elements);
+	const nodes = useMemo(() => live.filter(hasPrompt), [live]);
 
 	const active = useQueueSelector((q) =>
 		nodes.some((node) =>
@@ -81,32 +92,14 @@ export function useNodeScope(
 
 	// Built again at the click, for the same reason as a single element's generate.
 	const run = useCallback(() => {
-		queue.enqueueGraph(build().filter((node) => needsGeneration(node, queue)));
-	}, [queue, build]);
+		queue.enqueueGraph(
+			buildNodes(elements(), buildContext()).filter(
+				(node) => hasPrompt(node) && needsGeneration(node, queue),
+			),
+		);
+	}, [queue, elements, buildContext]);
 
-	return { empty: nodes.length === 0, active, pending, stale, run };
-}
+	const counts = { empty: nodes.length === 0, active, pending, stale };
 
-/**
- * The generate control for any slice of the document. `select` reads that slice
- * from the document as it is, and `subject` names it, so what a control says
- * and what it queues are decided in one place. Memoize `select`.
- */
-export function useGenerateScope(
-	select: (editor: Editor) => ContentElement[],
-	subject: GenerateSubject,
-): GenerateScope {
-	const editor = useSlateStatic();
-	const buildContext = useBuildContext();
-
-	const elements = useCallback(() => select(editor), [select, editor]);
-	const live = useLiveNodes(elements);
-	const nodes = useMemo(() => live.filter(hasPrompt), [live]);
-	const build = useCallback(
-		() => buildNodes(elements(), buildContext()).filter(hasPrompt),
-		[elements, buildContext],
-	);
-	const scope = useNodeScope(nodes, build);
-
-	return { ...scope, description: describe(scope, subject) };
+	return { ...counts, run, description: describe(counts, subject) };
 }

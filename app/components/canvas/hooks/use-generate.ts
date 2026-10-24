@@ -9,24 +9,23 @@ import { buildNode } from "@/lib/generation/generation-graph";
 import { useBuildContext } from "@/lib/generation/use-build-context";
 import { useLiveNode } from "@/lib/generation/use-live-nodes";
 import type { GeneratedElement } from "@/lib/canvas/types";
-import type { DerivedKind } from "@/lib/connectors/registry";
 
-export function useGenerate(element: GeneratedElement, kind?: DerivedKind) {
+export function useGenerate(element: GeneratedElement) {
 	const queue = useGenerationQueue();
 	const buildContext = useBuildContext();
-	const node = useLiveNode(element, kind);
+	const node = useLiveNode(element);
 	const snapshot = useQueueSelector((q) => q.getElementSnapshot(node.id));
 	const reason = useQueueSelector((q) => staleReason(node, q));
 
 	// Built again at the click: a live node's job may lag, see useLiveNode.
 	const generate = useCallback(() => {
-		const current = buildNode(element, buildContext(), kind);
-		if (!kind && !hasPrompt(current)) {
+		const current = buildNode(element, buildContext());
+		if (!hasPrompt(current)) {
 			queue.setError(current.id, "Enter a prompt first");
 			return;
 		}
 		queue.enqueueGraph([current]);
-	}, [queue, element, buildContext, kind]);
+	}, [queue, element, buildContext]);
 
 	const discard = useCallback(() => {
 		queue.discard(node.id);

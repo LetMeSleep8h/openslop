@@ -16,7 +16,6 @@ export function useBuildContext(): () => BuildContext {
 			state: buildSettings(store.getState()),
 			canvas: getCanvasElements(editor.children),
 			registry: DEFAULT_CONNECTOR_REGISTRY,
-			models: editor.defaultModels(),
 		}),
 		[store, editor],
 	);

@@ -13,8 +13,7 @@ export const buildCtx = (
 	{
 		state = projectState(),
 		registry = DEFAULT_CONNECTOR_REGISTRY,
-		models = {},
 	}: Partial<Omit<BuildContext, "canvas">> = {},
-): BuildContext => ({ state, canvas, registry, models });
+): BuildContext => ({ state, canvas, registry });
 
 export const EMPTY_CONTEXT = buildCtx();

@@ -5,7 +5,7 @@ import { ActionMenu, type ActionMenuItem } from "@/components/ui/action-menu";
 import { ConfirmDeleteDialog } from "@/components/ui/confirm-delete-dialog";
 import {
 	CaptionsReady,
-	CaptionsStale,
+	CaptionsAlert,
 	Hourglass,
 	MagicCaptions,
 	RotateCcw,
@@ -54,7 +54,7 @@ function faceOf(hasClip: boolean, captions: Captions): Face | null {
 	if (captions.error)
 		return {
 			label: `Captions failed: ${captions.error}. Try again`,
-			icon: <CaptionsStale size={SIZE} />,
+			icon: <CaptionsAlert size={SIZE} />,
 			variant: "destructive",
 			onClick: captions.generate,
 		};

@@ -1,10 +1,8 @@
 import pick from "lodash/pick";
 import type { ElementType, CanvasElement } from "@/lib/canvas/types";
-import type { ConnectorModels } from "@/lib/connectors/models";
-import type { ConnectorRegistry, DerivedKind } from "@/lib/connectors/registry";
+import type { ConnectorRegistry } from "@/lib/connectors/registry";
 import type {
 	AssetConnectorType,
-	AssetResult,
 	ConnectorConfig,
 	ModelRef,
 } from "@/lib/connectors/types";
@@ -13,23 +11,13 @@ import type { NodeInputs } from "./inputs";
 
 export type NodeId = string;
 
-export const derivedNodeId = (elementId: string, kind: DerivedKind): NodeId =>
-	`${elementId}:${kind}`;
-
 /** How a node runs: the connector and its configuration. */
 export type GenerationJob = {
 	elementType: ElementType;
 	connectorType: AssetConnectorType;
 	model: ModelRef;
 	config: ConnectorConfig;
-	/** A derived job lands on its element's result instead of keeping its own. */
-	revises?: { id: NodeId; merge: MergeResult };
 };
-
-export type MergeResult = (
-	target: AssetResult,
-	result: AssetResult,
-) => AssetResult;
 
 export type GenerationNode = {
 	id: NodeId;
@@ -47,7 +35,6 @@ export type BuildContext = {
 	state: ReturnType<typeof buildSettings>;
 	canvas: CanvasElement[];
 	registry: ConnectorRegistry;
-	models: ConnectorModels;
 };
 
 export const hasPrompt = (node: GenerationNode) => Boolean(node.inputs.prompt);

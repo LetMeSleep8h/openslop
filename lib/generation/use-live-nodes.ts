@@ -4,31 +4,20 @@ import { useCallback } from "react";
 import { useSlateSelector } from "slate-react";
 import { shallow } from "zustand/shallow";
 import type { GeneratedElement } from "@/lib/canvas/types";
-import type { DerivedKind } from "@/lib/connectors/registry";
 import type { GenerationNode } from "./graph";
 import { useResolveNode } from "./live-graph-provider";
 
-export function useLiveNode(
-	element: GeneratedElement,
-	kind?: DerivedKind,
-): GenerationNode {
+export function useLiveNode(element: GeneratedElement): GenerationNode {
 	const resolve = useResolveNode();
-	const read = useCallback(
-		() => resolve(element, kind),
-		[resolve, element, kind],
-	);
+	const read = useCallback(() => resolve(element), [resolve, element]);
 	return useSlateSelector(read);
 }
 
 /** Memoize `elements`. */
 export function useLiveNodes(
 	elements: () => GeneratedElement[],
-	kind?: DerivedKind,
 ): GenerationNode[] {
 	const resolve = useResolveNode();
-	const read = useCallback(
-		() => elements().map((element) => resolve(element, kind)),
-		[resolve, elements, kind],
-	);
+	const read = useCallback(() => elements().map(resolve), [resolve, elements]);
 	return useSlateSelector(read, shallow);
 }

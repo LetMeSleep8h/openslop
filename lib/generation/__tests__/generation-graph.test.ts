@@ -157,55 +157,6 @@ describe("GenerationGraph", () => {
 	});
 });
 
-describe("a derived node", () => {
-	const captionsOf = (of: ContentElement) => graph.resolve(of, "captions");
-
-	it("sits beside its element under its own id, depending on the element", () => {
-		const video = element("vid", "video", "a singer");
-		edit(video);
-
-		const captions = captionsOf(video);
-
-		expect(captions.id).toBe("vid:captions");
-		expect(captions.inputs.prompt).toBe("");
-		expect(captions.dependsOn["the clip"]).toBe(nodeOf(video));
-		expect(captions.job).toMatchObject({
-			elementType: "video",
-			connectorType: "transcript",
-			model: { provider: "openslop", model: "Slop STT v1" },
-		});
-	});
-
-	it("transcribes on the project's speech-to-text pick", () => {
-		const video = element("vid", "video", "a singer");
-		edit(video);
-		graph = new GenerationGraph({
-			...contextNow(),
-			models: { transcript: { provider: "cartesia", model: "Ink Whisper" } },
-		});
-
-		expect(captionsOf(video).job.model).toEqual({
-			provider: "cartesia",
-			model: "Ink Whisper",
-		});
-	});
-
-	it("is replaced when its element is edited, and kept when it is not", () => {
-		const video = element("vid", "video", "a singer");
-		edit(video, element("nar", "narration", "hello"));
-		const before = captionsOf(video);
-
-		edit(video, element("nar", "narration", "hello there"));
-		expect(captionsOf(video)).toBe(before);
-
-		edit(
-			element("vid", "video", "a dancer"),
-			element("nar", "narration", "hi"),
-		);
-		expect(captionsOf(video)).not.toBe(before);
-	});
-});
-
 describe("what the plugins declare", () => {
 	const image = createCanvasElement("image", { id: "img" });
 	const avatar = createCanvasElement("asset_avatar", {

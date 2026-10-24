@@ -1,43 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { ContentElement } from "@/lib/canvas/types";
 import { HttpTranscriptConnector } from "../transcript/connector";
-import { createClipSoundPlugin } from "../transcript/plugins/clip-sound";
-import type { AssetResult } from "../types";
 import { mockGatewaySequence } from "./_gateway-mock";
-import { dependenciesOf } from "./_state-ctx";
-
-const element = (id: string, type: ContentElement["type"]): ContentElement => ({
-	id,
-	type,
-	children: [{ id: `${id}-t`, type, text: "" }],
-});
-
-describe("clip-sound plugin", () => {
-	const plugin = createClipSoundPlugin();
-
-	it("depends on the clip it captions", () => {
-		const video = element("vid", "video");
-		expect(dependenciesOf(plugin, video)).toEqual({ "the clip": "vid" });
-	});
-
-	const before = (dependencies: Record<string, AssetResult>) => {
-		if (!plugin.beforeGenerate) throw new Error("no beforeGenerate");
-		return plugin.beforeGenerate({ prompt: "" }, { dependencies });
-	};
-
-	it("transcribes the video's sound, or the music's", () => {
-		expect(
-			before({ "the clip": { videoUrl: "v.mp4", durationSec: 5 } }),
-		).toEqual({ prompt: "", mediaUrl: "v.mp4" });
-		expect(
-			before({ "the clip": { audioUrl: "m.mp3", durationSec: 5 } }),
-		).toEqual({ prompt: "", mediaUrl: "m.mp3" });
-	});
-
-	it("fails when there is nothing to listen to", () => {
-		expect(() => before({})).toThrow(/no sound/);
-	});
-});
 
 describe("HttpTranscriptConnector", () => {
 	beforeEach(() => {

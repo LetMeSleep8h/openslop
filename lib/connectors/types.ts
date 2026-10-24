@@ -222,7 +222,7 @@ export type TTSGenerateParams = ConnectorGenerateParams & {
 	format?: string;
 };
 
-/** The media to transcribe, found by a plugin. */
+/** The sound to transcribe, which the server requires. */
 export type TranscriptGenerateParams = ConnectorGenerateParams & {
 	mediaUrl?: string;
 };

@@ -14,6 +14,7 @@ import { AutoScrollProvider } from "../scene-selection/auto-scroll-context";
 import { ViewModeProvider } from "./view-mode-context";
 import { WorkspaceProvider } from "./workspace-context";
 import { ActiveCaptionFont } from "./caption-fonts";
+import { CaptionsLander } from "./captions-lander";
 import { SloppyProvider } from "../sloppy/sloppy-provider";
 import { EditorPanelProvider } from "./panel/editor-panel-context";
 import { AssetEditProvider } from "./elements/character/asset-edit-provider";
@@ -53,6 +54,7 @@ export function CanvasProviders({ children }: { children: ReactNode }) {
 			<CanvasHistoryProvider history={history}>
 				<CanvasScopedProviders>
 					<ActiveCaptionFont />
+					<CaptionsLander />
 					{children}
 				</CanvasScopedProviders>
 			</CanvasHistoryProvider>
