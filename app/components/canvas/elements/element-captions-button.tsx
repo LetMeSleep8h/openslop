@@ -90,7 +90,6 @@ function menuOf(captions: Captions, onRemove: () => void): ActionMenuItem[] {
 	return items.filter((item) => item !== false);
 }
 
-/** A sparkle makes captions, a check has them, an alert means out of date. */
 export function ElementCaptionsButton({
 	element,
 }: {

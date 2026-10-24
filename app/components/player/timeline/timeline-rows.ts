@@ -118,27 +118,19 @@ export type CaptionClip = {
 	start: number;
 	duration: number;
 	text: string;
-	/** The clip the words belong to, which tints the line. */
 	type: ContentType;
 };
 
-/** One clip per caption line, held until the next line, around the spans it yields and the transition out. */
+/** One clip per caption line, held until the next line, around the spans it yields. */
 function linesOf(
 	{ element, start, duration }: Sequence,
-	{
-		maxWordsPerLine,
-		transitionSec,
-	}: { maxWordsPerLine: number; transitionSec: number },
+	maxWordsPerLine: number,
 ): CaptionClip[] {
 	const { captions } = element;
 	if (!captions) return [];
-	const shownUntil = duration - transitionSec;
 	const lines = captionLines(captions.words, maxWordsPerLine);
 	return lines.flatMap((words, index) => {
-		const until = Math.min(
-			lines[index + 1]?.[0].start ?? shownUntil,
-			shownUntil,
-		);
+		const until = lines[index + 1]?.[0].start ?? duration;
 		const text = words.map((word) => word.text).join(" ");
 		return shownSpans(words[0].start, until, captions.yieldSec ?? []).map(
 			([from, to]) => ({
@@ -152,16 +144,10 @@ function linesOf(
 	});
 }
 
-export function buildCaptionLanes(
-	layout: RenderLayout,
-	maxWordsPerLine: number,
-): CaptionClip[][] {
+export function buildCaptionLanes(layout: RenderLayout): CaptionClip[][] {
 	const clips = layoutSequences(layout)
 		.flatMap((sequence) =>
-			linesOf(sequence, {
-				maxWordsPerLine,
-				transitionSec: layout.transitionDurationSec,
-			}),
+			linesOf(sequence, layout.captionStyle.maxWordsPerLine),
 		)
 		.filter(({ start }) => start < layout.totalDurationSec)
 		.sort((a, b) => a.start - b.start);

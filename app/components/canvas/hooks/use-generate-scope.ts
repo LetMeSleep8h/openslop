@@ -60,7 +60,6 @@ function describe(
 	return `Generate ${fresh} ${noun(fresh)} and regenerate ${stale} stale in this ${subject}`;
 }
 
-/** Counts what in `nodes` is missing or out of date, and queues `build()` of it. */
 export function useNodeScope(
 	nodes: GenerationNode[],
 	build: () => GenerationNode[],

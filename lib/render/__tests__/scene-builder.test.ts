@@ -696,4 +696,12 @@ describe("caption yields", () => {
 				?.yieldSec,
 		).toEqual([[0, 8]]);
 	});
+
+	it("gives up the tail the next scene's transition steals", () => {
+		const layout = layoutOf([video(true)], { transitionType: "fade" });
+		const [{ element, duration }] = layout.series;
+		expect(element.captions?.yieldSec).toEqual([
+			[duration - layout.transitionDurationSec, duration],
+		]);
+	});
 });

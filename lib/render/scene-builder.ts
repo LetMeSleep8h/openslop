@@ -165,7 +165,10 @@ export function buildRenderLayout(
 		}
 	}
 
-	applyCaptionYields(layoutSequences({ series, sequences }));
+	applyCaptionYields(
+		layoutSequences({ series, sequences }),
+		transitionDurationSec,
+	);
 
 	return {
 		...config,

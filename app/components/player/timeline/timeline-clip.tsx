@@ -1,4 +1,9 @@
-import { CaptionsFill, type IconComponent } from "@/components/ui/icon";
+import type { ReactNode } from "react";
+import {
+	Captions,
+	CaptionsFill,
+	type IconComponent,
+} from "@/components/ui/icon";
 import { MediaWithSkeleton } from "@/lib/components/media-with-skeleton";
 import { ELEMENT_CONFIGS } from "@/app/components/canvas/elements/element-configs";
 import { sceneLabel } from "@/lib/canvas/constants";
@@ -76,16 +81,41 @@ function SelectedWash() {
 	);
 }
 
+const CORNERS = {
+	left: "left-0.5 rounded-tr-sm rounded-bl-sm",
+	right: "right-0.5 rounded-tl-sm rounded-br-sm",
+} as const;
+
+function CornerChip({
+	corner,
+	className,
+	children,
+}: {
+	corner: keyof typeof CORNERS;
+	className?: string;
+	children: ReactNode;
+}) {
+	return (
+		<span
+			className={cn(
+				"absolute bottom-0.5 flex h-3.5 max-w-full items-center bg-on-media/65 px-1 text-badge-xs text-on-media-foreground",
+				CORNERS[corner],
+				className,
+			)}
+		>
+			{children}
+		</span>
+	);
+}
+
 function ClipHeader({
 	icon: Icon,
 	label,
 	width,
-	captioned,
 }: {
 	icon: IconComponent;
 	label: string;
 	width: number;
-	captioned: boolean;
 }) {
 	return (
 		<span className="relative z-10 flex h-3.5 shrink-0 items-center gap-1 px-1">
@@ -93,9 +123,6 @@ function ClipHeader({
 			<span dir="auto" className="truncate text-badge-xs text-foreground">
 				{fit(label, width)}
 			</span>
-			{captioned ? (
-				<CaptionsFill size={HEADER_ICON_SIZE} className="ml-auto shrink-0" />
-			) : null}
 		</span>
 	);
 }
@@ -146,7 +173,6 @@ export function TimelineClip({
 				icon={config.Icon}
 				label={label || config.label}
 				width={width}
-				captioned={Boolean(element.captions)}
 			/>
 			<div className="flex min-h-0 flex-1">
 				{config.layer === "audio" ? (
@@ -176,9 +202,16 @@ export function TimelineClip({
 				)}
 			</div>
 			{sceneNumber ? (
-				<span className="absolute bottom-0.5 left-0.5 max-w-full truncate rounded-tr-sm rounded-bl-sm bg-on-media/65 px-1 font-numeric text-badge-xs text-on-media-foreground">
-					{fit(sceneLabel(sceneNumber), width)}
-				</span>
+				<CornerChip corner="left" className="font-numeric">
+					<span className="truncate">
+						{fit(sceneLabel(sceneNumber), width)}
+					</span>
+				</CornerChip>
+			) : null}
+			{element.captions ? (
+				<CornerChip corner="right">
+					<CaptionsFill size={HEADER_ICON_SIZE} />
+				</CornerChip>
 			) : null}
 			{selected ? <SelectedWash /> : null}
 		</div>
@@ -196,10 +229,11 @@ export function TimelineCaptionClip({
 		<div
 			className={cn(
 				FRAME,
-				"timeline-clip-surface justify-center border-border px-1",
+				"timeline-clip-surface flex-row items-center gap-1 rounded-sm border-border px-1",
 				ELEMENT_CONFIGS[type].colorClass,
 			)}
 		>
+			<Captions size={HEADER_ICON_SIZE} className="shrink-0" />
 			<span className="truncate text-left text-badge-xs text-foreground">
 				{text}
 			</span>

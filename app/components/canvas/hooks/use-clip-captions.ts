@@ -25,9 +25,10 @@ export function useClipCaptions(
 		staleReason: transcript.staleReason,
 		edited: Boolean(captions?.generatedTextTimestamps),
 		generate: transcript.generate,
-		remove: ownWords
-			? () => queue.reviseResult(element.id, removeCaptions)
-			: transcript.discard,
+		remove: () => {
+			if (transcript.result) transcript.discard();
+			if (clip?.textTimestamps) queue.reviseResult(element.id, removeCaptions);
+		},
 		reset: () => queue.reviseResult(ownerId, resetCaptions),
 	};
 }

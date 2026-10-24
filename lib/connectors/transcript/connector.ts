@@ -1,8 +1,9 @@
 import type { AssetBundle } from "@/lib/api/asset-bundle";
 import { HttpAssetGateway } from "@/lib/gateway/http";
 import { BaseJobConnector } from "../asset-base";
+import { z } from "zod";
 import {
-	TTSResultSchema,
+	TextTimestampSchema,
 	type ResolvedConnectorConfig,
 	type TranscriptGenerateParams,
 	type TranscriptResult,
@@ -23,7 +24,7 @@ export class HttpTranscriptConnector extends BaseJobConnector<
 			durationSec: bundle.durationSec,
 			textTimestamps: await bundle.fetchJson(
 				"timestamps",
-				TTSResultSchema.shape.textTimestamps,
+				z.array(TextTimestampSchema),
 			),
 		};
 	}

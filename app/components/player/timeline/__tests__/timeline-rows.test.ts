@@ -221,12 +221,16 @@ describe("buildCaptionLanes", () => {
 	const narration = el("n", "narration", {
 		captions: { ownerId: "n", firstWord: 0, words },
 	});
+	const twoPerLine = (...elements: ResolvedElement[]) => {
+		const layout = layoutOf(elements);
+		return buildCaptionLanes({
+			...layout,
+			captionStyle: { ...layout.captionStyle, maxWordsPerLine: 2 },
+		});
+	};
 
 	it("lays one clip per line, each held until the next begins or the clip ends", () => {
-		const [lane] = buildCaptionLanes(
-			layoutOf([el("a", "image"), narration]),
-			2,
-		);
+		const [lane] = twoPerLine(el("a", "image"), narration);
 		expect(
 			lane.map(({ start, duration, text }) => ({ start, duration, text })),
 		).toEqual([
@@ -239,7 +243,7 @@ describe("buildCaptionLanes", () => {
 		const yielding = el("n", "narration", {
 			captions: { ownerId: "n", firstWord: 0, words, yieldSec: [[0, 2]] },
 		});
-		const [lane] = buildCaptionLanes(layoutOf([el("a", "image"), yielding]), 2);
+		const [lane] = twoPerLine(el("a", "image"), yielding);
 		expect(lane.map(({ text }) => text)).toEqual(["three"]);
 	});
 
@@ -247,7 +251,7 @@ describe("buildCaptionLanes", () => {
 		const yielding = el("n", "narration", {
 			captions: { ownerId: "n", firstWord: 0, words, yieldSec: [[1, 3]] },
 		});
-		const [lane] = buildCaptionLanes(layoutOf([el("a", "image"), yielding]), 2);
+		const [lane] = twoPerLine(el("a", "image"), yielding);
 		expect(lane.map(({ start, duration }) => [start, duration])).toEqual([
 			[0, 1],
 			[3, 1],

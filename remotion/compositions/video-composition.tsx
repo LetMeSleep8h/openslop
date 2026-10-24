@@ -38,25 +38,6 @@ const blackBg: React.CSSProperties = { backgroundColor: "black" };
 
 const fallbackHtml5AudioProps = { crossOrigin: "anonymous" } as const;
 
-/** Captions run for the clip's span, short of the tail the next scene's transition steals. */
-function CaptionsTrack({
-	element,
-	transitionDurationSec,
-}: SequenceContentProps) {
-	const { durationInFrames, fps } = useVideoConfig();
-	if (!element.captions) return null;
-	return (
-		<Sequence
-			durationInFrames={Math.max(
-				1,
-				durationInFrames - toFrames(transitionDurationSec, fps),
-			)}
-		>
-			<Captions captions={element.captions} />
-		</Sequence>
-	);
-}
-
 function AudioSequence({ element }: { element: ResolvedElement }) {
 	const { durationInFrames, fps } = useVideoConfig();
 	const gain = volumeToGain(element.volume);
@@ -104,12 +85,6 @@ function VideoElementPlayer({ element }: { element: ResolvedElement }) {
 	);
 }
 
-type SequenceContentProps = {
-	element: ResolvedElement;
-	/** The overlap the next scene steals from this one's tail; 0 on a cut. */
-	transitionDurationSec: number;
-};
-
 function ElementMedia({ element }: { element: ResolvedElement }) {
 	switch (element.layer) {
 		case "visual":
@@ -127,11 +102,11 @@ function ElementMedia({ element }: { element: ResolvedElement }) {
 	}
 }
 
-function SequenceContent(props: SequenceContentProps) {
+function SequenceContent({ element }: { element: ResolvedElement }) {
 	return (
 		<>
-			<ElementMedia element={props.element} />
-			<CaptionsTrack {...props} />
+			<ElementMedia element={element} />
+			{element.captions && <Captions captions={element.captions} />}
 		</>
 	);
 }
@@ -171,21 +146,11 @@ export const VideoComposition: React.FC<RenderLayout> = ({
 						durationInFrames={toFrames(duration, fps)}
 						premountFor={toFrames(FOREGROUND_PREMOUNT_SEC, fps)}
 					>
-						<SequenceContent
-							element={element}
-							transitionDurationSec={transitionDurationSec}
-						/>
+						<SequenceContent element={element} />
 					</TransitionSeries.Sequence>
 				</Fragment>
 			)),
-		[
-			fps,
-			presentation,
-			series,
-			transitionDurationSec,
-			transitionFrames,
-			transitionTiming,
-		],
+		[fps, presentation, series, transitionFrames, transitionTiming],
 	);
 	const layeredSequenceNodes = useMemo(
 		() =>
@@ -197,14 +162,11 @@ export const VideoComposition: React.FC<RenderLayout> = ({
 						durationInFrames={toFrames(duration, fps)}
 						premountFor={toFrames(LAYER_PREMOUNT_SEC, fps)}
 					>
-						<SequenceContent
-							element={element}
-							transitionDurationSec={transitionDurationSec}
-						/>
+						<SequenceContent element={element} />
 					</Sequence>
 				)),
 			),
-		[fps, sequences, transitionDurationSec],
+		[fps, sequences],
 	);
 
 	return (

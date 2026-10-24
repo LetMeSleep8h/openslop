@@ -11,7 +11,6 @@ import { useLiveNode } from "@/lib/generation/use-live-nodes";
 import type { GeneratedElement } from "@/lib/canvas/types";
 import type { DerivedKind } from "@/lib/connectors/registry";
 
-/** The element's own generation, or with `kind` the job derived from it, which takes no prompt. */
 export function useGenerate(element: GeneratedElement, kind?: DerivedKind) {
 	const queue = useGenerationQueue();
 	const buildContext = useBuildContext();

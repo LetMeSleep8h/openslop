@@ -13,7 +13,6 @@ import { useElementWidth } from "@/lib/components/use-element-width";
 import { renderCharacterRefs } from "@/lib/connectors/character-refs";
 import { toFrames } from "@/lib/render/frames";
 import { formatTime } from "@/lib/render/timestamps";
-import { useProject } from "@/lib/project/use-project";
 import { clamp, cn } from "@/lib/utils";
 import { usePlayerControl } from "../player-control-context";
 import { usePlayerScrub } from "../use-player-scrub";
@@ -171,7 +170,7 @@ function CaptionTrack({
 							type="button"
 							aria-label={`Caption at ${formatTime(start)}: ${text}`}
 							onClick={() => onSeek(start)}
-							className="block h-full w-full rounded-md focus-ring"
+							className="block h-full w-full rounded-sm focus-ring"
 						>
 							<TimelineCaptionClip text={text} type={type} />
 						</button>
@@ -205,13 +204,7 @@ export function Timeline() {
 		width: viewportWidth,
 	} = useElementWidth<HTMLDivElement>();
 	const rows = useMemo(() => buildTimelineRows(layout), [layout]);
-	const maxWordsPerLine = useProject(
-		(s) => s.videoSettings.captionStyle.maxWordsPerLine,
-	);
-	const captionLanes = useMemo(
-		() => buildCaptionLanes(layout, maxWordsPerLine),
-		[layout, maxWordsPerLine],
-	);
+	const captionLanes = useMemo(() => buildCaptionLanes(layout), [layout]);
 	const { zoom, pxPerSec, zoomIn, zoomOut, canZoomIn, canZoomOut } =
 		useTimelineZoom(
 			layout.totalDurationSec,
