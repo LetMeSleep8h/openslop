@@ -1,3 +1,4 @@
+import { resultIdentity } from "../connectors/asset-url";
 import type { AssetConnectorType, AssetResult } from "../connectors/types";
 import { errorMessage } from "../errors";
 import { createEmitter } from "../store/emitter";
@@ -251,12 +252,20 @@ export class GenerationQueue {
 
 		try {
 			const inputs = generationInputs(node, this);
+			const target = this.revisedResult(node);
 			const result = await generateForElement(
 				node,
 				this.dependencyResults(node),
 				signal,
 			);
 			if (signal.aborted) return;
+			if (node.job.revises) {
+				this.landOn(node.job.revises, target, result);
+				this.snapshots.update(elementId, { error: null });
+				this.snapshots.resetToIdle(elementId);
+				this.snapshots.notify();
+				return;
+			}
 			this.commit({
 				elementId,
 				elementType,
@@ -278,6 +287,27 @@ export class GenerationQueue {
 		} finally {
 			if (!signal.aborted) this.finalizeJob(elementId);
 		}
+	}
+
+	private revisedResult({ job: { revises } }: GenerationNode) {
+		return revises ? this.snapshots.get(revises.id).result : null;
+	}
+
+	/** Only onto the take it was made from: a clip regenerated meanwhile drops it. */
+	private landOn(
+		{ id, merge }: NonNullable<GenerationNode["job"]["revises"]>,
+		target: AssetResult | null,
+		result: AssetResult,
+	) {
+		const now = this.snapshots.get(id).result;
+		if (
+			!target ||
+			!now ||
+			this.snapshots.isActive(id) ||
+			resultIdentity(now) !== resultIdentity(target)
+		)
+			throw new Error("The clip changed while this ran; run it again");
+		this.reviseResult(id, (current) => merge(current, result));
 	}
 
 	private finalizeJob(elementId: string) {

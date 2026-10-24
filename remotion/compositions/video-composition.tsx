@@ -106,7 +106,9 @@ function SequenceContent({ element }: { element: ResolvedElement }) {
 	return (
 		<>
 			<ElementMedia element={element} />
-			{element.captions && <Captions captions={element.captions} />}
+			{element.captions && (
+				<Captions captions={element.captions} clip={element} />
+			)}
 		</>
 	);
 }

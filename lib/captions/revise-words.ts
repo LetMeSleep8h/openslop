@@ -46,3 +46,18 @@ export function resetCaptions({
 		throw new Error("These captions have no edits to reset");
 	return { ...result, textTimestamps: generatedTextTimestamps };
 }
+
+/** A transcript's words replace the clip's, edits and all. */
+export const withTranscript = (
+	{ generatedTextTimestamps: _edits, ...clip }: AssetResult,
+	{ textTimestamps = [] }: AssetResult,
+): AssetResult => ({ ...clip, textTimestamps });
+
+export function removeCaptions({
+	textTimestamps,
+	generatedTextTimestamps: _edits,
+	...result
+}: AssetResult): AssetResult {
+	if (!textTimestamps) throw new Error("This result has no captions");
+	return result;
+}

@@ -7,8 +7,9 @@ export type CaptionLineProps = {
 	style: CaptionStyle;
 	words: CaptionWord[];
 	fontSizePx: number;
-	ownerId: string;
-	/** The span of the owner's words the line shows, which an edit replaces. */
+	clipId: string;
+	sceneId: string;
+	/** The span of the clip's words the line shows, which an edit replaces. */
 	from: number;
 	to: number;
 };

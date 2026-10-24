@@ -7,7 +7,7 @@ import {
 import { isScene } from "@/lib/canvas/scenes";
 import { getPromptText } from "@/lib/generation/inputs";
 import { getPrimaryUrl } from "@/lib/connectors/asset-url";
-import { captionsOwnerId } from "@/lib/captions/captions-owner";
+import type { AssetResult } from "@/lib/connectors/types";
 import type { ElementSnapshot } from "@/lib/generation/snapshots";
 import type { ResolvedCaptions, ResolvedElement } from "./types";
 import {
@@ -20,15 +20,12 @@ import { elementTrim, trimTimestamps } from "./clip-trim";
 
 function resolveCaptions(
 	element: ContentElement,
-	getSnapshot: (id: string) => ElementSnapshot,
+	{ textTimestamps }: AssetResult,
 	trimStartSec: number,
 ): ResolvedCaptions | undefined {
-	if (!hasCaptions(element.type)) return undefined;
-	const ownerId = captionsOwnerId(element.id, (id) => getSnapshot(id).result);
-	const timestamps = getSnapshot(ownerId).result?.textTimestamps;
-	if (!timestamps?.length) return undefined;
-	const words = trimTimestamps(timestamps, trimStartSec);
-	return { ownerId, firstWord: timestamps.length - words.length, words };
+	if (!hasCaptions(element.type) || !textTimestamps?.length) return undefined;
+	const words = trimTimestamps(textTimestamps, trimStartSec);
+	return { firstWord: textTimestamps.length - words.length, words };
 }
 
 export function resolveElements(
@@ -70,7 +67,7 @@ export function resolveElements(
 				volume: getVolume(element),
 				motion: getMotion(element),
 				captions: captionsEnabled
-					? resolveCaptions(element, getSnapshot, trim.trimStartSec)
+					? resolveCaptions(element, snapshot.result, trim.trimStartSec)
 					: undefined,
 			});
 		}

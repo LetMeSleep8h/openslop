@@ -4,10 +4,9 @@ import type { CaptionStyle } from "../captions/caption-style";
 import type { MotionEffect } from "./motion-effect-names";
 import type { TransitionType } from "./transitions";
 
-/** The words a clip shows, from its trim start, and the node whose result holds them. */
+/** The words a clip shows, from its trim start. */
 export type ResolvedCaptions = {
-	ownerId: string;
-	/** Where `words` start in the owner's own word list, past those the trim cut. */
+	/** Where `words` start in the clip's own word list, past those the trim cut. */
 	firstWord: number;
 	words: TextTimestamp[];
 	/** Spans, from the clip's start, where a clip that outranks it shows its captions instead. */

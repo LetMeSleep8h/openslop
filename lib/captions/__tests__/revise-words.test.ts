@@ -1,7 +1,13 @@
 import { describe, expect, it } from "vitest";
 import type { TextTimestamp } from "@/lib/connectors/types";
 import { captionLineAt } from "../caption-layout";
-import { editCaptions, resetCaptions, reviseWords } from "../revise-words";
+import {
+	editCaptions,
+	removeCaptions,
+	resetCaptions,
+	reviseWords,
+	withTranscript,
+} from "../revise-words";
 
 const song = ["the", "quick", "fox", "ran", "over", "the", "lazy", "dog"].map(
 	(text, at) => ({ text, start: at, end: at + 1 }),
@@ -19,6 +25,20 @@ describe("editCaptions", () => {
 
 	it("refuses to reset captions nobody edited", () => {
 		expect(() => resetCaptions(generated)).toThrow();
+	});
+
+	it("removes the words and their edits, and keeps the rest of the result", () => {
+		const edited = editCaptions(generated, 0, 2, "a slow");
+		expect(removeCaptions(edited)).toEqual({ durationSec: 8 });
+		expect(() => removeCaptions({ durationSec: 8 })).toThrow();
+	});
+
+	it("lets a transcript replace the words, edits and all", () => {
+		const edited = editCaptions(generated, 0, 2, "a slow");
+		const heard = [{ text: "hey", start: 0, end: 1 }];
+		expect(
+			withTranscript(edited, { durationSec: 8, textTimestamps: heard }),
+		).toEqual({ durationSec: 8, textTimestamps: heard });
 	});
 });
 

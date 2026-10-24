@@ -13,23 +13,26 @@ import {
 	useQueueSelector,
 } from "@/lib/generation/generation-queue-provider";
 import { usePlayerPlaying } from "./use-player-state";
+import { useSelectScene } from "./use-select-scene";
 
 const LINE_CLASS =
 	"pointer-events-auto rounded-[0.12em] outline-solid outline-0 outline-offset-[0.1em] outline-ring";
 
-/** A paused line opens for editing on a click, and saves to whichever node holds its words. It stays shut while that node regenerates. */
+/** A paused line opens for editing on a click, bringing its clip's card into view, and saves to that clip. It stays shut while the clip regenerates. */
 function EditableCaptionLine({
 	style,
 	words,
 	fontSizePx,
-	ownerId,
+	clipId,
+	sceneId,
 	from,
 	to,
 }: CaptionLineProps) {
 	const playing = usePlayerPlaying();
+	const selectScene = useSelectScene();
 	const queue = useGenerationQueue();
 	const regenerating = useQueueSelector((q) =>
-		isGenerationActive(q.getElementSnapshot(ownerId).status),
+		isGenerationActive(q.getElementSnapshot(clipId).status),
 	);
 	const [draft, setDraft] = useState<string | null>(null);
 	const cancelled = useRef(false);
@@ -40,6 +43,7 @@ function EditableCaptionLine({
 	const text = words.map((word) => word.text).join(" ");
 
 	const open = () => {
+		selectScene(sceneId, null, clipId);
 		cancelled.current = false;
 		setDraft(text);
 	};
@@ -47,7 +51,7 @@ function EditableCaptionLine({
 	const save = (value: string) => {
 		setDraft(null);
 		if (cancelled.current || value.trim() === text) return;
-		queue.reviseResult(ownerId, (result) =>
+		queue.reviseResult(clipId, (result) =>
 			editCaptions(result, from, to, value),
 		);
 	};

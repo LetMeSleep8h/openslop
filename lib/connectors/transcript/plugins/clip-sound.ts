@@ -11,7 +11,7 @@ const clip: Dependency = (element) => ({
 	[CLIP_LABEL]: isGenerated(element) ? element : undefined,
 });
 
-/** Transcribes the clip's own sound, so its captions go stale when it changes. */
+/** Transcribes the clip's own sound. */
 export function createClipSoundPlugin(): ConnectorPlugin<TranscriptGenerateParams> {
 	return {
 		name: "clip-sound",

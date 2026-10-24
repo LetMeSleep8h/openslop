@@ -13,6 +13,7 @@ import type { generateForElement } from "../generate-for-element";
 import { GenerationQueue } from "../queue";
 import { isNodeStale } from "../staleness";
 import type { CommittedVersion } from "../versions";
+import type { GenerationNode } from "../graph";
 import { inputsFor, jobNode as makeJob } from "./_graph";
 
 let generateMock: Mock<typeof generateForElement>;
@@ -580,6 +581,64 @@ describe("GenerationQueue", () => {
 		it("refuses an element with no result to edit", () => {
 			expect(() => generationQueue.reviseResult("rv2", () => edited)).toThrow(
 				/no result/,
+			);
+		});
+	});
+
+	describe("a job that revises its element", () => {
+		const clip = { audioUrl: "https://example.com/a.wav", durationSec: 2 };
+		const heard = [{ text: "hi", start: 0, end: 1 }];
+		const transcribe = (): GenerationNode => {
+			const node = makeJob("clip:captions", [], inputsFor(""));
+			return {
+				...node,
+				job: {
+					...node.job,
+					revises: {
+						id: "clip",
+						merge: (target, { textTimestamps }) => ({
+							...target,
+							textTimestamps,
+						}),
+					},
+				},
+			};
+		};
+
+		beforeEach(async () => {
+			generateMock.mockResolvedValue(clip);
+			generationQueue.enqueueGraph([makeJob("clip")]);
+			await vi.runAllTimersAsync();
+		});
+
+		it("lands its result on the element, under the element's inputs, and keeps none itself", async () => {
+			generateMock.mockResolvedValue({ durationSec: 2, textTimestamps: heard });
+			generationQueue.enqueueGraph([transcribe()]);
+			await vi.runAllTimersAsync();
+
+			expect(generationQueue.getElementSnapshot("clip")).toMatchObject({
+				result: { ...clip, textTimestamps: heard },
+				resultInputs: inputsFor("clip"),
+			});
+			expect(generationQueue.getElementSnapshot("clip:captions")).toMatchObject(
+				{ status: "idle", result: null, error: null },
+			);
+		});
+
+		it("fails, leaving the element alone, when the element was remade meanwhile", async () => {
+			let land: (result: AssetResult) => void = () => {};
+			generateMock.mockReturnValue(new Promise((resolve) => (land = resolve)));
+			generationQueue.enqueueGraph([transcribe()]);
+			await vi.advanceTimersByTimeAsync(0);
+			const remade = { ...clip, audioUrl: "https://example.com/b.wav" };
+			generationQueue.commitResult(makeJob("clip"), remade);
+
+			land({ durationSec: 2, textTimestamps: heard });
+			await vi.runAllTimersAsync();
+
+			expect(generationQueue.getElementSnapshot("clip").result).toEqual(remade);
+			expect(generationQueue.getElementSnapshot("clip:captions").error).toMatch(
+				/changed/,
 			);
 		});
 	});

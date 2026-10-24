@@ -9,6 +9,7 @@ import { hasCaptions } from "@/lib/canvas/types";
 import { plural } from "@/lib/format";
 import { buildNodes, generatedById } from "@/lib/generation/generation-graph";
 import { useBuildContext } from "@/lib/generation/use-build-context";
+import { useGenerationQueue } from "@/lib/generation/generation-queue-provider";
 import { useLiveNodes } from "@/lib/generation/use-live-nodes";
 import { layoutSequences } from "@/lib/render/scene-builder";
 import { useLayout } from "../../player/render-layout-context";
@@ -21,9 +22,10 @@ function describe({ empty, active, pending }: GenerateCounts) {
 	return `Caption ${pending} ${plural(pending, "clip")}`;
 }
 
-/** Transcribes every clip on the timeline whose model gave no words and whose captions are missing or out of date. */
+/** Transcribes every clip on the timeline that has no words yet. */
 export function AutoCaptionsButton() {
 	const editor = useSlateStatic();
+	const queue = useGenerationQueue();
 	const { layout } = useLayout();
 	const buildContext = useBuildContext();
 
@@ -32,12 +34,13 @@ export function AutoCaptionsButton() {
 		const ids = layoutSequences(layout)
 			.map(({ element }) => element)
 			.filter(
-				({ id, type, captions }) =>
-					hasCaptions(type) && captions?.ownerId !== id,
+				({ id, type }) =>
+					hasCaptions(type) &&
+					queue.getElementSnapshot(id).result?.textTimestamps === undefined,
 			)
 			.map(({ id }) => id);
 		return [...new Set(ids)].flatMap((id) => generatedById(canvas, id) ?? []);
-	}, [editor, layout]);
+	}, [editor, layout, queue]);
 	const build = useCallback(
 		() => buildNodes(transcribed(), buildContext(), "captions"),
 		[transcribed, buildContext],

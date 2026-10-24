@@ -4,6 +4,7 @@ import type { ConnectorModels } from "@/lib/connectors/models";
 import type { ConnectorRegistry, DerivedKind } from "@/lib/connectors/registry";
 import type {
 	AssetConnectorType,
+	AssetResult,
 	ConnectorConfig,
 	ModelRef,
 } from "@/lib/connectors/types";
@@ -21,7 +22,14 @@ export type GenerationJob = {
 	connectorType: AssetConnectorType;
 	model: ModelRef;
 	config: ConnectorConfig;
+	/** A derived job lands on its element's result instead of keeping its own. */
+	revises?: { id: NodeId; merge: MergeResult };
 };
+
+export type MergeResult = (
+	target: AssetResult,
+	result: AssetResult,
+) => AssetResult;
 
 export type GenerationNode = {
 	id: NodeId;

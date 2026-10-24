@@ -59,11 +59,12 @@ function nodeSource(
 			attributes: element.generationAttributes ?? {},
 			connector: resolveElementConnector(element, ctx.registry, ctx.canvas),
 		};
-	const { connector: type, ...config } = DERIVED_JOBS[kind];
+	const { connector: type, merge, ...config } = DERIVED_JOBS[kind];
 	return {
 		prompt: "",
 		attributes: {},
 		connector: { type, model: resolveModel(type, ctx.models[type]), config },
+		revises: { id: element.id, merge },
 	};
 }
 
@@ -97,7 +98,7 @@ export class GenerationGraph {
 		this.visiting.add(id);
 
 		try {
-			const { prompt, attributes, connector } = nodeSource(
+			const { prompt, attributes, connector, revises } = nodeSource(
 				element,
 				this.ctx,
 				kind,
@@ -116,6 +117,7 @@ export class GenerationGraph {
 					connectorType: connector.type,
 					model: connector.model,
 					config: connector.config,
+					revises,
 				},
 			});
 		} finally {

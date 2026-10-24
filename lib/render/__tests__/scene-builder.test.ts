@@ -651,8 +651,7 @@ describe("buildRenderLayout", () => {
 });
 
 describe("caption yields", () => {
-	const captions = (ownerId: string) => ({
-		ownerId,
+	const captions = () => ({
 		firstWord: 0,
 		words: [{ text: "hi", start: 0, end: 1 }],
 	});
@@ -661,13 +660,13 @@ describe("caption yields", () => {
 			id: "vid",
 			type: "video",
 			durationSec: 8,
-			captions: withWords ? captions("vid:captions") : undefined,
+			captions: withWords ? captions() : undefined,
 		});
 	const music = el({
 		id: "mus",
 		type: "music",
 		durationSec: 8,
-		captions: captions("mus:captions"),
+		captions: captions(),
 	});
 
 	it("hides a video's captions while speech over it is captioned", () => {
@@ -677,7 +676,7 @@ describe("caption yields", () => {
 				id: "nar",
 				type: "narration",
 				durationSec: 3,
-				captions: captions("nar"),
+				captions: captions(),
 			}),
 		]);
 		expect(layout.series[0].element.captions?.yieldSec).toEqual([[0, 3]]);

@@ -50,7 +50,7 @@ function faceOf(hasClip: boolean, captions: Captions): Face | null {
 			label: "Generating captions…",
 			icon: <Spinner className="text-current" />,
 		};
-	if (captions.captions) return null;
+	if (captions.captioned) return null;
 	if (captions.error)
 		return {
 			label: `Captions failed: ${captions.error}. Try again`,
@@ -79,7 +79,7 @@ function menuOf(captions: Captions, onRemove: () => void): ActionMenuItem[] {
 			icon: <RotateCcw />,
 			onSelect: captions.reset,
 		},
-		Boolean(captions.remove) && {
+		{
 			key: "remove",
 			label: "Remove captions",
 			icon: <Trash2 />,
@@ -114,11 +114,9 @@ export function ElementCaptionsButton({
 			</SimpleTooltip>
 		);
 
-	const state = captions.staleReason
-		? `Captions out of date: ${captions.staleReason}`
+	const label = captions.edited
+		? "Captions ready, edited in the player"
 		: "Captions ready";
-	const label = captions.edited ? `${state}, edited in the player` : state;
-	const Icon = captions.staleReason ? CaptionsStale : CaptionsReady;
 	return (
 		<>
 			<Tooltip>
@@ -127,11 +125,8 @@ export function ElementCaptionsButton({
 					align="end"
 				>
 					<TooltipTrigger asChild>
-						<HeaderIconButton
-							ariaLabel={label}
-							variant={captions.staleReason ? "stale" : "quiet"}
-						>
-							<Icon size={SIZE} />
+						<HeaderIconButton ariaLabel={label}>
+							<CaptionsReady size={SIZE} />
 						</HeaderIconButton>
 					</TooltipTrigger>
 				</ActionMenu>
@@ -143,9 +138,9 @@ export function ElementCaptionsButton({
 				title={() =>
 					`Remove this ${ELEMENT_CONFIGS[element.type].label.toLowerCase()}'s captions?`
 				}
-				description="Only this clip's transcript is deleted, with any edits to it. Getting it back means transcribing again."
+				description="Only this clip loses its captions and any edits to them. Getting them back means generating them again."
 				actionLabel="Remove captions"
-				onConfirm={({ remove }) => remove?.()}
+				onConfirm={({ remove }) => remove()}
 			/>
 		</>
 	);

@@ -219,7 +219,7 @@ describe("buildCaptionLanes", () => {
 		end: at + 1,
 	}));
 	const narration = el("n", "narration", {
-		captions: { ownerId: "n", firstWord: 0, words },
+		captions: { firstWord: 0, words },
 	});
 	const twoPerLine = (...elements: ResolvedElement[]) => {
 		const layout = layoutOf(elements);
@@ -241,7 +241,7 @@ describe("buildCaptionLanes", () => {
 
 	it("leaves out the lines a louder clip's captions cover", () => {
 		const yielding = el("n", "narration", {
-			captions: { ownerId: "n", firstWord: 0, words, yieldSec: [[0, 2]] },
+			captions: { firstWord: 0, words, yieldSec: [[0, 2]] },
 		});
 		const [lane] = twoPerLine(el("a", "image"), yielding);
 		expect(lane.map(({ text }) => text)).toEqual(["three"]);
@@ -249,7 +249,7 @@ describe("buildCaptionLanes", () => {
 
 	it("cuts a line around the span a louder clip's captions take", () => {
 		const yielding = el("n", "narration", {
-			captions: { ownerId: "n", firstWord: 0, words, yieldSec: [[1, 3]] },
+			captions: { firstWord: 0, words, yieldSec: [[1, 3]] },
 		});
 		const [lane] = twoPerLine(el("a", "image"), yielding);
 		expect(lane.map(({ start, duration }) => [start, duration])).toEqual([

@@ -249,106 +249,49 @@ describe("resolveElements", () => {
 	});
 
 	describe("captions", () => {
-		const elements = [makeElement("nar1", "narration")];
-		const withTimestamps = (id: string) =>
-			makeSnapshot({
-				result:
-					id === "nar1"
-						? {
-								audioUrl: "https://example.com/nar.mp3",
-								durationSec: 8,
-								textTimestamps: [{ text: "hello", start: 0, end: 1 }],
-							}
-						: null,
-			});
-
-		it("attaches speech's own words when captions are enabled project-wide", () => {
-			const resolved = resolveElements([wrap(elements)], withTimestamps, {
-				captionsEnabled: true,
-			});
-			expect(resolved[0].captions).toEqual({
-				ownerId: "nar1",
-				firstWord: 0,
-				words: [{ text: "hello", start: 0, end: 1 }],
-			});
-		});
-
-		it("drops captions when captions are disabled project-wide", () => {
-			const resolved = resolveElements([wrap(elements)], withTimestamps, {
-				captionsEnabled: false,
-			});
-			expect(resolved[0].captions).toBeUndefined();
-		});
-
 		const heard = [
 			{ text: "one", start: 0, end: 1 },
 			{ text: "two", start: 2, end: 3 },
 		];
 		const snapshots: Record<string, ElementSnapshot> = {
 			vid: makeSnapshot({
-				result: { videoUrl: "https://example.com/v.mp4", durationSec: 5 },
-			}),
-			"vid:captions": makeSnapshot({
-				result: { durationSec: 5, textTimestamps: heard },
+				result: {
+					videoUrl: "https://example.com/v.mp4",
+					durationSec: 5,
+					textTimestamps: heard,
+				},
 			}),
 			img: makeSnapshot({
 				result: { imageUrl: "https://example.com/i.png", durationSec: 0 },
 			}),
 		};
 		const bySnapshot = (id: string) => snapshots[id] ?? makeSnapshot();
+		const resolveOne = (element: ContentElement, captionsEnabled = true) =>
+			resolveElements([wrap([element])], bySnapshot, { captionsEnabled })[0];
 
-		it("puts a video's transcribed words on the video, held by its captions node", () => {
-			const [video] = resolveElements(
-				[wrap([makeElement("vid", "video")])],
-				bySnapshot,
-				{ captionsEnabled: true },
-			);
-			expect(video.captions).toEqual({
-				ownerId: "vid:captions",
+		it("captions a clip with the words on its own result", () => {
+			expect(resolveOne(makeElement("vid", "video")).captions).toEqual({
 				firstWord: 0,
 				words: heard,
 			});
 		});
 
-		it("counts the words a trim cuts, so an edit still lands on the owner's own", () => {
-			const [video] = resolveElements(
-				[wrap([makeElement("vid", "video", { trimStart: "1.5" })])],
-				bySnapshot,
-				{ captionsEnabled: true },
-			);
-			expect(video.captions?.firstWord).toBe(1);
-			expect(video.captions?.words).toEqual([
-				{ text: "two", start: 0.5, end: 1.5 },
-			]);
+		it("drops captions when captions are disabled project-wide", () => {
+			expect(
+				resolveOne(makeElement("vid", "video"), false).captions,
+			).toBeUndefined();
 		});
 
-		it("captions a clip with its own words until it is transcribed", () => {
-			const own = [{ text: "said", start: 0, end: 1 }];
-			const clip = makeSnapshot({
-				result: { videoUrl: "v.mp4", durationSec: 5, textTimestamps: own },
-			});
-			const captionsOf = (transcribed: boolean) =>
-				resolveElements(
-					[wrap([makeElement("vid", "video")])],
-					(id) =>
-						id === "vid"
-							? clip
-							: transcribed
-								? bySnapshot(id)
-								: makeSnapshot({ result: null }),
-					{ captionsEnabled: true },
-				)[0].captions;
-			expect(captionsOf(false)).toMatchObject({ ownerId: "vid", words: own });
-			expect(captionsOf(true)?.ownerId).toBe("vid:captions");
+		it("counts the words a trim cuts, so an edit still lands on the clip's own", () => {
+			const { captions } = resolveOne(
+				makeElement("vid", "video", { trimStart: "1.5" }),
+			);
+			expect(captions?.firstWord).toBe(1);
+			expect(captions?.words).toEqual([{ text: "two", start: 0.5, end: 1.5 }]);
 		});
 
 		it("captions nothing a clip has no words for", () => {
-			const [image] = resolveElements(
-				[wrap([makeElement("img", "image")])],
-				bySnapshot,
-				{ captionsEnabled: true },
-			);
-			expect(image.captions).toBeUndefined();
+			expect(resolveOne(makeElement("img", "image")).captions).toBeUndefined();
 		});
 	});
 
