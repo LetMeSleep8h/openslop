@@ -15,7 +15,7 @@ import type { GenerationQueue } from "@/lib/generation/queue";
 import { isGenerationActive } from "@/lib/generation/snapshots";
 import { layoutSequences } from "@/lib/render/sequences";
 import { useLayout } from "@/app/components/player/render-layout-context";
-import { useTranscribeClips } from "../hooks/use-clip-captions";
+import { useQueueSTT } from "../hooks/use-clip-captions";
 
 const uncaptioned = (queue: GenerationQueue, clips: ElementRef[]) =>
 	clips.filter(
@@ -30,11 +30,11 @@ function describe(active: boolean, pending: number, captionable: number) {
 	return `Caption ${pending} ${plural(pending, "clip")}`;
 }
 
-/** Transcribes every clip on the timeline that has no words yet. */
+/** Runs speech to text on every clip on the timeline that has no words yet. */
 export function AutoCaptionsButton() {
 	const queue = useGenerationQueue();
 	const { layout } = useLayout();
-	const transcribe = useTranscribeClips();
+	const queueSTT = useQueueSTT();
 
 	const captionable = useMemo(
 		() =>
@@ -60,7 +60,7 @@ export function AutoCaptionsButton() {
 			className="w-full"
 			tooltip={describe(active, pending, captionable.length)}
 			unavailable={active || pending === 0}
-			onClick={() => transcribe(uncaptioned(queue, captionable))}
+			onClick={() => queueSTT(uncaptioned(queue, captionable))}
 		>
 			<MagicCaptions aria-hidden="true" />
 			Auto captions

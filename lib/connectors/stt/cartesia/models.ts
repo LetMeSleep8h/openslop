@@ -1,4 +1,4 @@
-export const CARTESIA_TRANSCRIPT_MODELS = {
+export const CARTESIA_STT_MODELS = {
 	"Ink Whisper": {
 		id: "ink-whisper",
 		cost: "low",

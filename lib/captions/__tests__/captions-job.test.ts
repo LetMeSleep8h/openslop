@@ -29,8 +29,8 @@ vi.mock("@/lib/generation/generate-for-element", () => ({
 const clip = { audioUrl: "https://example.com/a.wav", durationSec: 2 };
 const heard = [{ text: "hi", start: 0, end: 1 }];
 const element = { id: "clip", type: "narration" } as const;
-const transcribe = (take: AssetResult = clip) =>
-	captionsNode(element, take, DEFAULT_MODELS.transcript);
+const stt = (take: AssetResult = clip) =>
+	captionsNode(element, take, DEFAULT_MODELS.stt);
 
 describe("captions jobs", () => {
 	let queue: GenerationQueue;
@@ -56,7 +56,7 @@ describe("captions jobs", () => {
 	it("lands the words on the clip, under its inputs, and records no version of their own", async () => {
 		const made = queue.getElementSnapshot("clip").resultInputs;
 		generateMock.mockResolvedValue({ durationSec: 2, textTimestamps: heard });
-		queue.enqueueGraph([transcribe()]);
+		queue.enqueueGraph([stt()]);
 		await vi.runAllTimersAsync();
 
 		expect(queue.getElementSnapshot("clip")).toMatchObject({
@@ -76,7 +76,7 @@ describe("captions jobs", () => {
 	it("fails, leaving the clip alone, when the clip was remade meanwhile", async () => {
 		let land: (result: AssetResult) => void = () => {};
 		generateMock.mockReturnValue(new Promise((resolve) => (land = resolve)));
-		queue.enqueueGraph([transcribe()]);
+		queue.enqueueGraph([stt()]);
 		await vi.advanceTimersByTimeAsync(0);
 		const remade = { ...clip, audioUrl: "https://example.com/b.wav" };
 		queue.commitResult(jobNode("clip"), remade);
@@ -90,10 +90,10 @@ describe("captions jobs", () => {
 		);
 	});
 
-	it("transcribes the take the clip holds, and never remakes the clip", async () => {
+	it("runs speech to text on the take the clip holds, and never remakes the clip", async () => {
 		generateMock.mockClear();
 		generateMock.mockResolvedValue({ durationSec: 2, textTimestamps: heard });
-		queue.enqueueGraph([transcribe()]);
+		queue.enqueueGraph([stt()]);
 		await vi.runAllTimersAsync();
 
 		expect(generateMock).toHaveBeenCalledTimes(1);
@@ -103,6 +103,6 @@ describe("captions jobs", () => {
 	});
 
 	it("refuses a take with no sound", () => {
-		expect(() => transcribe({ durationSec: 0 })).toThrow(/no sound/);
+		expect(() => stt({ durationSec: 0 })).toThrow(/no sound/);
 	});
 });

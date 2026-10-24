@@ -36,7 +36,7 @@ import { CaptionPreview } from "./caption-preview";
 import { CaptionTextStyleFields } from "./caption-text-style-fields";
 import { PanelCard, PanelField } from "./panel-card";
 
-const SPEECH_TO_TEXT = groupFor("transcript");
+const SPEECH_TO_TEXT = groupFor("stt");
 
 const CASE_OPTIONS: MediaToggleOption<CaptionCasing>[] = [
 	{ value: "none", label: "Standard case", text: "Ab" },

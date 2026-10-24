@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { HttpTranscriptConnector } from "../transcript/connector";
+import { HttpSTTConnector } from "../stt/connector";
 import { mockGatewaySequence } from "./_gateway-mock";
 
-describe("HttpTranscriptConnector", () => {
+describe("HttpSTTConnector", () => {
 	beforeEach(() => {
 		vi.restoreAllMocks();
 	});
@@ -15,7 +15,7 @@ describe("HttpTranscriptConnector", () => {
 				pollStatus: "completed",
 				result: {
 					id: "t1",
-					type: "transcript",
+					type: "stt",
 					provider: "elevenlabs",
 					result: { timestamps: "timestamps.json" },
 					metadata: { durationSec: 3 },
@@ -24,7 +24,7 @@ describe("HttpTranscriptConnector", () => {
 			{ payload: words },
 		]);
 
-		const result = await new HttpTranscriptConnector({
+		const result = await new HttpSTTConnector({
 			model: { provider: "openslop", model: "Slop STT v1" },
 		}).generate({ prompt: "", mediaUrl: "https://blob/v.mp4" });
 

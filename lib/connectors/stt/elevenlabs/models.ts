@@ -1,4 +1,4 @@
-export const ELEVENLABS_TRANSCRIPT_MODELS = {
+export const ELEVENLABS_STT_MODELS = {
 	"Scribe v2": {
 		id: "scribe_v2",
 		cost: "medium",

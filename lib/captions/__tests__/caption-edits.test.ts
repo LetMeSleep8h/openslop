@@ -4,7 +4,7 @@ import {
 	removeCaptions,
 	resetCaptions,
 	reviseWords,
-	withTranscript,
+	withSTTResult,
 } from "../caption-edits";
 
 const song = ["the", "quick", "fox", "ran", "over", "the", "lazy", "dog"].map(
@@ -31,13 +31,13 @@ describe("editCaptions", () => {
 		expect(() => removeCaptions({ durationSec: 8 })).toThrow();
 	});
 
-	it("lets a transcript replace the words, edits and all", () => {
+	it("lets speech to text replace the words, edits and all", () => {
 		const edited = editCaptions(generated, 0, 2, "a slow");
 		const heard = [{ text: "hey", start: 0, end: 1 }];
 		expect(
-			withTranscript(edited, { durationSec: 8, textTimestamps: heard }),
+			withSTTResult(edited, { durationSec: 8, textTimestamps: heard }),
 		).toEqual({ durationSec: 8, textTimestamps: heard });
-		expect(() => withTranscript(edited, { durationSec: 8 })).toThrow();
+		expect(() => withSTTResult(edited, { durationSec: 8 })).toThrow();
 	});
 });
 

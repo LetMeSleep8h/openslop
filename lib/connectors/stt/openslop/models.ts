@@ -1,4 +1,4 @@
-export const OPENSLOP_TRANSCRIPT_MODELS = {
+export const OPENSLOP_STT_MODELS = {
 	"Slop STT v1": {
 		id: "scribe_v2",
 		cost: "medium",

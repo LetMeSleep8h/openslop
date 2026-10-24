@@ -4,7 +4,7 @@ import type { GenerationNode, NodeId } from "@/lib/generation/graph";
 import type { GenerationQueue } from "@/lib/generation/queue";
 import { isGenerationActive } from "@/lib/generation/snapshots";
 import type { CommittedVersion } from "@/lib/generation/versions";
-import { withTranscript } from "./caption-edits";
+import { withSTTResult } from "./caption-edits";
 
 const SUFFIX = ":captions";
 
@@ -15,7 +15,7 @@ const clipOf = (id: NodeId) =>
 
 const soundOf = (take: AssetResult) => take.videoUrl ?? take.audioUrl;
 
-/** Transcribes the take `clip` holds now, so captioning never remakes the clip. */
+/** Runs speech to text on the take `clip` holds now, so captioning never remakes the clip. */
 export function captionsNode(
 	clip: ElementRef,
 	take: AssetResult,
@@ -29,14 +29,14 @@ export function captionsNode(
 		dependsOn: {},
 		job: {
 			elementType: clip.type,
-			connectorType: "transcript",
+			connectorType: "stt",
 			model,
 			config: {},
 		},
 	};
 }
 
-/** Records each commit, but lands a transcript on its clip instead of keeping it as a version. */
+/** Records each commit, but lands speech to text on its clip instead of keeping it as a version. */
 export const withCaptionsLanding =
 	(queue: GenerationQueue, record: (version: CommittedVersion) => void) =>
 	(version: CommittedVersion) => {
@@ -55,7 +55,7 @@ export const withCaptionsLanding =
 			return;
 		}
 		queue.reviseResult({ id: clipId, type: version.elementType }, (current) =>
-			withTranscript(current, version.result),
+			withSTTResult(current, version.result),
 		);
 		queue.discard(version.elementId);
 	};

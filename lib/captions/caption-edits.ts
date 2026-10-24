@@ -46,12 +46,13 @@ export function resetCaptions({
 	return { ...result, textTimestamps: generatedTextTimestamps };
 }
 
-/** A transcript's words replace the clip's, edits and all. */
-export function withTranscript(
+/** Speech to text's words replace the clip's, edits and all. */
+export function withSTTResult(
 	{ generatedTextTimestamps: _edits, ...clip }: AssetResult,
 	{ textTimestamps }: AssetResult,
 ): AssetResult {
-	if (!textTimestamps) throw new Error("This transcript has no words");
+	if (!textTimestamps)
+		throw new Error("This speech to text result has no words");
 	return { ...clip, textTimestamps };
 }
 

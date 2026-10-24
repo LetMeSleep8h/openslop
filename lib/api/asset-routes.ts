@@ -15,7 +15,7 @@ import {
 	AUDIO_FIELDS,
 	bodySchema,
 	IMAGE_FIELDS,
-	TRANSCRIPT_FIELDS,
+	STT_FIELDS,
 	TTS_FIELDS,
 	VIDEO_FIELDS,
 } from "./generation-schema";
@@ -35,7 +35,7 @@ const ASSET_ROUTES: Record<
 	tts: { fields: TTS_FIELDS, label: "TTS generation" },
 	music: { fields: AUDIO_FIELDS, label: "Music generation" },
 	sfx: { fields: AUDIO_FIELDS, label: "SFX generation" },
-	transcript: { fields: TRANSCRIPT_FIELDS, label: "Transcription" },
+	stt: { fields: STT_FIELDS, label: "Speech to text" },
 };
 
 export const createAssetRouteHandler = <TPicked extends ModelRef>(

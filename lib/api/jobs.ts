@@ -15,7 +15,7 @@ export const JOB_CONNECTOR_TYPES = [
 	"image",
 	"music",
 	"sfx",
-	"transcript",
+	"stt",
 	"tts",
 	"video",
 ] as const;

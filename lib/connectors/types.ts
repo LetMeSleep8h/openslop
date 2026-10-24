@@ -16,7 +16,7 @@ export const ASSET_CONNECTOR_TYPES = [
 	"tts",
 	"video",
 	"voice",
-	"transcript",
+	"stt",
 ] as const;
 
 export type AssetConnectorType = (typeof ASSET_CONNECTOR_TYPES)[number];
@@ -65,7 +65,7 @@ export type ModelEntries = {
 	video: VisualModelEntry;
 	sfx: ModelEntry;
 	music: ModelEntry;
-	transcript: ModelEntry;
+	stt: ModelEntry;
 };
 
 export type ModelTable = Record<string, ModelEntry>;
@@ -220,16 +220,16 @@ export type TTSGenerateParams = ConnectorGenerateParams & {
 	format?: string;
 };
 
-/** The sound to transcribe, which the server requires. */
-export type TranscriptGenerateParams = ConnectorGenerateParams & {
+/** The sound to turn into text, which the server requires. */
+export type STTGenerateParams = ConnectorGenerateParams & {
 	mediaUrl?: string;
 };
 
-export type SourcedTranscriptParams = TranscriptGenerateParams & {
+export type SourcedSTTParams = STTGenerateParams & {
 	mediaUrl: string;
 };
 
-export type TranscriptResult = {
+export type STTResult = {
 	durationSec: number;
 	textTimestamps: TextTimestamp[];
 };

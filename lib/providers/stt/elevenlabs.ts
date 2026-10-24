@@ -7,9 +7,9 @@ import type { TextTimestamp } from "@/lib/connectors/types";
 import type { BundleFile } from "@/lib/api/asset-bundle";
 import { BaseProvider } from "../base";
 import { timestampsFile } from "../timestamps-file";
-import type { RawTranscript, TranscriptRequest } from "./base";
+import type { RawSTT, STTRequest } from "./base";
 import { validateElevenLabsKey } from "../elevenlabs";
-import type { TranscriptProvider } from "../types";
+import type { STTProvider } from "../types";
 
 /** ElevenLabs reports no per-request cost; batch Scribe is $0.22 an hour. */
 const USD_PER_HOUR = 0.22;
@@ -24,12 +24,12 @@ const toTimestamps = (
 			: [],
 	);
 
-export class ElevenLabsTranscript
-	extends BaseProvider<TranscriptRequest, RawTranscript>
-	implements TranscriptProvider
+export class ElevenLabsSTT
+	extends BaseProvider<STTRequest, RawSTT>
+	implements STTProvider
 {
 	protected readonly blobConfig = {
-		type: "transcript",
+		type: "stt",
 		provider: "elevenlabs",
 	};
 	private readonly client: ElevenLabsClient;
@@ -43,11 +43,11 @@ export class ElevenLabsTranscript
 		return validateElevenLabsKey(this.apiKey);
 	}
 
-	protected toFiles(result: RawTranscript): BundleFile[] {
+	protected toFiles(result: RawSTT): BundleFile[] {
 		return [timestampsFile(result.textTimestamps)];
 	}
 
-	protected async _generate({ mediaUrl, model }: TranscriptRequest) {
+	protected async _generate({ mediaUrl, model }: STTRequest) {
 		const { words, audioDurationSecs } = await this.client.speechToText.convert(
 			{
 				modelId: model as SpeechToTextConvertRequestModelId,

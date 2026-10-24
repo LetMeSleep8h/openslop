@@ -40,10 +40,10 @@ export const MODEL_GROUPS: ModelGroup[] = [
 		types: ["voice", "tts"],
 	},
 	{
-		key: "transcript",
+		key: "stt",
 		label: "Speech to Text",
 		Icon: Captions,
-		types: ["transcript"],
+		types: ["stt"],
 	},
 	{
 		key: "sound",

@@ -4,10 +4,7 @@ import { DEFAULT_LLM_MODEL, LLM_MODELS } from "./llm/models";
 import { DEFAULT_MUSIC_MODEL, MUSIC_MODELS } from "./music/models";
 import { isProvider } from "./provider-catalog";
 import { DEFAULT_SFX_MODEL, SFX_MODELS } from "./sfx/models";
-import {
-	DEFAULT_TRANSCRIPT_MODEL,
-	TRANSCRIPT_MODELS,
-} from "./transcript/models";
+import { DEFAULT_STT_MODEL, STT_MODELS } from "./stt/models";
 import { DEFAULT_TTS_MODEL, TTS_MODELS } from "./tts/models";
 import {
 	CONNECTOR_TYPES,
@@ -41,7 +38,7 @@ export const MODELS: {
 	video: VIDEO_MODELS,
 	sfx: SFX_MODELS,
 	music: MUSIC_MODELS,
-	transcript: TRANSCRIPT_MODELS,
+	stt: STT_MODELS,
 };
 
 export const DEFAULT_MODELS: Record<ConnectorType, ModelRef> = {
@@ -52,7 +49,7 @@ export const DEFAULT_MODELS: Record<ConnectorType, ModelRef> = {
 	video: DEFAULT_VIDEO_MODEL,
 	sfx: DEFAULT_SFX_MODEL,
 	music: DEFAULT_MUSIC_MODEL,
-	transcript: DEFAULT_TRANSCRIPT_MODEL,
+	stt: DEFAULT_STT_MODEL,
 };
 
 export const hasModel = (

@@ -4,21 +4,21 @@ import { readTimestamps } from "@/lib/providers/timestamps-file";
 import { BaseJobConnector } from "../asset-base";
 import type {
 	ResolvedConnectorConfig,
-	TranscriptGenerateParams,
-	TranscriptResult,
+	STTGenerateParams,
+	STTResult,
 } from "../types";
 
-export class HttpTranscriptConnector extends BaseJobConnector<
-	TranscriptGenerateParams,
-	TranscriptResult
+export class HttpSTTConnector extends BaseJobConnector<
+	STTGenerateParams,
+	STTResult
 > {
-	readonly type = "transcript" as const;
+	readonly type = "stt" as const;
 
 	constructor(config: ResolvedConnectorConfig) {
-		super(new HttpAssetGateway(config.model, "transcript"), config);
+		super(new HttpAssetGateway(config.model, "stt"), config);
 	}
 
-	async resolveBundle(bundle: AssetBundle): Promise<TranscriptResult> {
+	async resolveBundle(bundle: AssetBundle): Promise<STTResult> {
 		return {
 			durationSec: bundle.durationSec,
 			textTimestamps: await readTimestamps(bundle),

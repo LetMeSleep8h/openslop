@@ -4,8 +4,8 @@ import { RunwareImage } from "@/lib/providers/image/runware";
 import { AnthropicLLM } from "@/lib/providers/llm/anthropic";
 import { ElevenLabsMusic } from "@/lib/providers/music/elevenlabs";
 import { ElevenLabsSFX } from "@/lib/providers/sfx/elevenlabs";
-import { CartesiaTranscript } from "@/lib/providers/transcript/cartesia";
-import { ElevenLabsTranscript } from "@/lib/providers/transcript/elevenlabs";
+import { CartesiaSTT } from "@/lib/providers/stt/cartesia";
+import { ElevenLabsSTT } from "@/lib/providers/stt/elevenlabs";
 import { CartesiaTTS } from "@/lib/providers/tts/cartesia";
 import type { ProviderType, Providers } from "@/lib/providers/types";
 import { RunwareVideo } from "@/lib/providers/video/runware";
@@ -28,11 +28,11 @@ const VENDORS: Record<
 > = {
 	anthropic: { llm: AnthropicLLM },
 	runware: { image: RunwareImage, video: RunwareVideo },
-	cartesia: { tts: CartesiaTTS, transcript: CartesiaTranscript },
+	cartesia: { tts: CartesiaTTS, stt: CartesiaSTT },
 	elevenlabs: {
 		music: ElevenLabsMusic,
 		sfx: ElevenLabsSFX,
-		transcript: ElevenLabsTranscript,
+		stt: ElevenLabsSTT,
 	},
 };
 

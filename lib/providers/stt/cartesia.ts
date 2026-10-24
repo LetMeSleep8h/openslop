@@ -3,9 +3,9 @@ import type { BundleFile } from "@/lib/api/asset-bundle";
 import { AssetBundle } from "@/lib/api/asset-bundle";
 import { BaseProvider } from "../base";
 import { timestampsFile } from "../timestamps-file";
-import type { RawTranscript, TranscriptRequest } from "./base";
+import type { RawSTT, STTRequest } from "./base";
 import { validateCartesiaKey } from "../cartesia";
-import type { TranscriptProvider } from "../types";
+import type { STTProvider } from "../types";
 
 /** Cartesia reports no per-request cost: a credit buys 2 seconds, at the Scale plan's $299 for 8M credits. */
 const USD_PER_SECOND = 299 / 8_000_000 / 2;
@@ -20,11 +20,11 @@ async function fetchOwnMedia(url: string): Promise<Response> {
 	return res;
 }
 
-export class CartesiaTranscript
-	extends BaseProvider<TranscriptRequest, RawTranscript>
-	implements TranscriptProvider
+export class CartesiaSTT
+	extends BaseProvider<STTRequest, RawSTT>
+	implements STTProvider
 {
-	protected readonly blobConfig = { type: "transcript", provider: "cartesia" };
+	protected readonly blobConfig = { type: "stt", provider: "cartesia" };
 	private readonly client: Cartesia;
 
 	constructor(private readonly apiKey: string) {
@@ -36,11 +36,11 @@ export class CartesiaTranscript
 		return validateCartesiaKey(this.apiKey);
 	}
 
-	protected toFiles(result: RawTranscript): BundleFile[] {
+	protected toFiles(result: RawSTT): BundleFile[] {
 		return [timestampsFile(result.textTimestamps)];
 	}
 
-	protected async _generate({ mediaUrl, model }: TranscriptRequest) {
+	protected async _generate({ mediaUrl, model }: STTRequest) {
 		const { words, duration } = await this.client.stt.transcribe({
 			file: await fetchOwnMedia(mediaUrl),
 			model,
