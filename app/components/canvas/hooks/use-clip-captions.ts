@@ -1,5 +1,5 @@
 import { captionsOwnerId } from "@/lib/captions/captions-owner";
-import { removeCaptions, resetCaptions } from "@/lib/captions/revise-words";
+import { resetCaptions } from "@/lib/captions/revise-words";
 import type { GeneratedElement } from "@/lib/canvas/types";
 import type { AssetResult } from "@/lib/connectors/types";
 import { useGenerationQueue } from "@/lib/generation/generation-queue-provider";
@@ -25,10 +25,7 @@ export function useClipCaptions(
 		staleReason: transcript.staleReason,
 		edited: Boolean(captions?.generatedTextTimestamps),
 		generate: transcript.generate,
-		remove: () => {
-			if (transcript.result) transcript.discard();
-			if (clip?.textTimestamps) queue.reviseResult(element.id, removeCaptions);
-		},
+		remove: transcript.result ? transcript.discard : undefined,
 		reset: () => queue.reviseResult(ownerId, resetCaptions),
 	};
 }

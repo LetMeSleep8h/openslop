@@ -79,7 +79,7 @@ function menuOf(captions: Captions, onRemove: () => void): ActionMenuItem[] {
 			icon: <RotateCcw />,
 			onSelect: captions.reset,
 		},
-		{
+		Boolean(captions.remove) && {
 			key: "remove",
 			label: "Remove captions",
 			icon: <Trash2 />,
@@ -143,9 +143,9 @@ export function ElementCaptionsButton({
 				title={() =>
 					`Remove this ${ELEMENT_CONFIGS[element.type].label.toLowerCase()}'s captions?`
 				}
-				description="Only this clip loses its captions and any edits to them. Getting them back means generating them again."
+				description="Only this clip's transcript is deleted, with any edits to it. Getting it back means transcribing again."
 				actionLabel="Remove captions"
-				onConfirm={({ remove }) => remove()}
+				onConfirm={({ remove }) => remove?.()}
 			/>
 		</>
 	);

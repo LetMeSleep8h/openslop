@@ -1,12 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { TextTimestamp } from "@/lib/connectors/types";
 import { captionLineAt } from "../caption-layout";
-import {
-	editCaptions,
-	removeCaptions,
-	resetCaptions,
-	reviseWords,
-} from "../revise-words";
+import { editCaptions, resetCaptions, reviseWords } from "../revise-words";
 
 const song = ["the", "quick", "fox", "ran", "over", "the", "lazy", "dog"].map(
 	(text, at) => ({ text, start: at, end: at + 1 }),
@@ -24,12 +19,6 @@ describe("editCaptions", () => {
 
 	it("refuses to reset captions nobody edited", () => {
 		expect(() => resetCaptions(generated)).toThrow();
-	});
-
-	it("removes the words and their edits, and keeps the rest of the result", () => {
-		const edited = editCaptions(generated, 0, 2, "a slow");
-		expect(removeCaptions(edited)).toEqual({ durationSec: 8 });
-		expect(() => removeCaptions({ durationSec: 8 })).toThrow();
 	});
 });
 

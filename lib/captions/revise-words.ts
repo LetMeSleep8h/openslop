@@ -46,12 +46,3 @@ export function resetCaptions({
 		throw new Error("These captions have no edits to reset");
 	return { ...result, textTimestamps: generatedTextTimestamps };
 }
-
-export function removeCaptions({
-	textTimestamps,
-	generatedTextTimestamps: _generated,
-	...result
-}: AssetResult): AssetResult {
-	if (!textTimestamps) throw new Error("This result has no captions");
-	return result;
-}
