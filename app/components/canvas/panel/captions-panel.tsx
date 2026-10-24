@@ -21,7 +21,6 @@ import {
 	type CaptionAlignX,
 	type CaptionAlignY,
 	type CaptionCasing,
-	type CaptionReveal,
 } from "@/lib/captions/caption-style";
 import { useCaptionStyle } from "@/lib/captions/use-caption-style";
 import { useProject } from "@/lib/project/use-project";
@@ -38,11 +37,6 @@ import { CaptionTextStyleFields } from "./caption-text-style-fields";
 import { PanelCard, PanelField } from "./panel-card";
 
 const SPEECH_TO_TEXT = groupFor("transcript");
-
-const REVEAL_OPTIONS: MediaToggleOption<CaptionReveal>[] = [
-	{ value: "line", label: "Whole line at once", text: "Line" },
-	{ value: "word", label: "Word by word", text: "Word" },
-];
 
 const CASE_OPTIONS: MediaToggleOption<CaptionCasing>[] = [
 	{ value: "none", label: "Standard case", text: "Ab" },
@@ -154,20 +148,14 @@ export function CaptionsPanel() {
 								onChange={(casing) => setStyle({ casing })}
 							/>
 						</PanelField>
-						<PanelField label="Reveal">
-							<MediaToggle
-								value={style.reveal}
-								options={REVEAL_OPTIONS}
-								onChange={(reveal) => setStyle({ reveal })}
-							/>
-						</PanelField>
-						<PanelField label="Words per line">
+						<PanelField label="Line length">
 							<NumberScrubber
-								label="Words per line"
-								tooltip="Maximum words on a caption line"
-								value={style.maxWordsPerLine}
-								{...CAPTION_RANGES.maxWordsPerLine}
-								onChange={(maxWordsPerLine) => setStyle({ maxWordsPerLine })}
+								label="Line length"
+								tooltip="How long a line gathers words before the next one starts; 0 shows one word at a time"
+								value={style.lineMs}
+								suffix="ms"
+								{...CAPTION_RANGES.lineMs}
+								onChange={(lineMs) => setStyle({ lineMs })}
 							/>
 						</PanelField>
 					</PanelCard>

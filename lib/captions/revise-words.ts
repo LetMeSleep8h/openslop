@@ -1,6 +1,6 @@
 import type { AssetResult, TextTimestamp } from "@/lib/connectors/types";
 
-/** Typed text becomes one caption line over the span it replaces, each word timed by its length. */
+/** Typed text takes over the span it replaces, each word timed by its length. */
 export function reviseWords(
 	words: readonly TextTimestamp[],
 	from: number,
@@ -12,12 +12,11 @@ export function reviseWords(
 	const typed = text.split(/\s+/).filter(Boolean);
 	const total = typed.reduce((sum, word) => sum + word.length, 0);
 	const secPerChar = (last.end - first.start) / total;
-	const line = first.line ?? first.start;
 	let at = first.start;
 	const retimed = typed.map((word) => {
 		const start = at;
 		at += word.length * secPerChar;
-		return { text: word, start, end: at, line };
+		return { text: word, start, end: at };
 	});
 	return [...words.slice(0, from), ...retimed, ...words.slice(to)];
 }

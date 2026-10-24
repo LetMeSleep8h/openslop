@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { shownSpans, yieldsAt } from "../caption-yields";
+import { shownSpans } from "../caption-yields";
 
 describe("shownSpans", () => {
 	it("keeps a span no yield touches", () => {
@@ -22,12 +22,5 @@ describe("shownSpans", () => {
 
 	it("shows nothing of a span a yield covers", () => {
 		expect(shownSpans(1, 2, [[0, 3]])).toEqual([]);
-	});
-});
-
-describe("yieldsAt", () => {
-	it("yields from a span's start up to its end", () => {
-		expect(yieldsAt([[1, 2]], 1)).toBe(true);
-		expect(yieldsAt([[1, 2]], 2)).toBe(false);
 	});
 });

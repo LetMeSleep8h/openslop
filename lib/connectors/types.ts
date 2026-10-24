@@ -135,8 +135,6 @@ export const TextTimestampSchema = z.object({
 	text: z.string(),
 	start: z.number(),
 	end: z.number(),
-	/** Words typed as one caption line share an id, and stay one line. */
-	line: z.number().optional(),
 });
 
 export type TextTimestamp = z.infer<typeof TextTimestampSchema>;

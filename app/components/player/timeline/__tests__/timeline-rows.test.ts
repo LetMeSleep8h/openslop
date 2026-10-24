@@ -225,17 +225,17 @@ describe("buildCaptionLanes", () => {
 		const layout = layoutOf(elements);
 		return buildCaptionLanes({
 			...layout,
-			captionStyle: { ...layout.captionStyle, maxWordsPerLine: 2 },
+			captionStyle: { ...layout.captionStyle, lineMs: 1500 },
 		});
 	};
 
-	it("lays one clip per line, each held until the next begins or the clip ends", () => {
+	it("lays one clip per line, each held until the next begins or its last word ends", () => {
 		const [lane] = twoPerLine(el("a", "image"), narration);
 		expect(
 			lane.map(({ start, duration, text }) => ({ start, duration, text })),
 		).toEqual([
 			{ start: 0, duration: 2, text: "one two" },
-			{ start: 2, duration: 2, text: "three" },
+			{ start: 2, duration: 1, text: "three" },
 		]);
 	});
 
@@ -249,12 +249,12 @@ describe("buildCaptionLanes", () => {
 
 	it("cuts a line around the span a louder clip's captions take", () => {
 		const yielding = el("n", "narration", {
-			captions: { firstWord: 0, words, yieldSec: [[1, 3]] },
+			captions: { firstWord: 0, words, yieldSec: [[1, 2.5]] },
 		});
 		const [lane] = twoPerLine(el("a", "image"), yielding);
 		expect(lane.map(({ start, duration }) => [start, duration])).toEqual([
 			[0, 1],
-			[3, 1],
+			[2.5, 0.5],
 		]);
 	});
 });

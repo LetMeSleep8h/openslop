@@ -41,9 +41,6 @@ export function applyCaptionYields(
 	}
 }
 
-export const yieldsAt = (yieldSec: [number, number][], seconds: number) =>
-	yieldSec.some(([from, to]) => seconds >= from && seconds < to);
-
 /** The parts of `[from, to)` a clip's captions show, around the spans they yield. */
 export function shownSpans(
 	from: number,

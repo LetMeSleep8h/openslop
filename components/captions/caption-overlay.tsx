@@ -121,12 +121,9 @@ export function CaptionOverlay({
 						<span
 							// Words repeat within a line, so the position is the identity.
 							key={i}
-							style={{
-								...captionWordStyle(
-									word.active ? style.activeWord : style.base,
-								),
-								visibility: word.hidden ? "hidden" : "visible",
-							}}
+							style={captionWordStyle(
+								word.active ? style.activeWord : style.base,
+							)}
 						>
 							{word.text}
 						</span>

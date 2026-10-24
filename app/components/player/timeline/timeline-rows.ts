@@ -7,7 +7,6 @@ import {
 } from "@/components/ui/icon";
 import { captionLines } from "@/lib/captions/caption-layout";
 import type { ContentType, ElementRole, LayerType } from "@/lib/canvas/types";
-import { shownSpans } from "@/lib/render/caption-yields";
 import { layoutSequences } from "@/lib/render/scene-builder";
 import type { Sequence, RenderLayout } from "@/lib/render/types";
 
@@ -121,34 +120,32 @@ export type CaptionClip = {
 	type: ContentType;
 };
 
-/** One clip per caption line, held until the next line, around the spans it yields. */
+/** One clip per caption line, as the player shows it. */
 function linesOf(
 	{ element, start, duration }: Sequence,
-	maxWordsPerLine: number,
+	lineMs: number,
 ): CaptionClip[] {
 	const { captions } = element;
 	if (!captions) return [];
-	const lines = captionLines(captions.words, maxWordsPerLine);
-	return lines.flatMap((words, index) => {
-		const until = lines[index + 1]?.[0].start ?? duration;
-		const text = words.map((word) => word.text).join(" ");
-		return shownSpans(words[0].start, until, captions.yieldSec ?? []).map(
-			([from, to]) => ({
-				key: `${element.id}-${start}-${from}`,
-				start: start + from,
-				duration: to - from,
-				text,
-				type: element.type,
-			}),
-		);
+	return captionLines(captions, lineMs).flatMap((line) => {
+		const end = Math.min(line.end, duration);
+		if (end <= line.start) return [];
+		return {
+			key: `${element.id}-${start}-${line.start}`,
+			start: start + line.start,
+			duration: end - line.start,
+			text: captions.words
+				.slice(line.from, line.to)
+				.map((word) => word.text)
+				.join(" "),
+			type: element.type,
+		};
 	});
 }
 
 export function buildCaptionLanes(layout: RenderLayout): CaptionClip[][] {
 	const clips = layoutSequences(layout)
-		.flatMap((sequence) =>
-			linesOf(sequence, layout.captionStyle.maxWordsPerLine),
-		)
+		.flatMap((sequence) => linesOf(sequence, layout.captionStyle.lineMs))
 		.filter(({ start }) => start < layout.totalDurationSec)
 		.sort((a, b) => a.start - b.start);
 	return packLanes(clips);
