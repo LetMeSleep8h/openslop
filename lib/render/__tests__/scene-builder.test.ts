@@ -651,21 +651,22 @@ describe("buildRenderLayout", () => {
 });
 
 describe("the caption rule", () => {
-	const captions = () => ({
+	const captions = (untilSec: number) => ({
 		firstWord: 0,
 		words: [{ text: "hi", start: 0, end: 1 }],
+		untilSec,
 	});
 	const video = el({
 		id: "vid",
 		type: "video",
 		durationSec: 10,
-		captions: captions(),
+		captions: captions(10),
 	});
 	const narration = el({
 		id: "nar",
 		type: "narration",
 		durationSec: 3,
-		captions: captions(),
+		captions: captions(3),
 	});
 
 	it("drops a video's captions when speech plays over it, and keeps the speech's", () => {
@@ -683,7 +684,7 @@ describe("the caption rule", () => {
 			id: "vid2",
 			type: "video",
 			durationSec: 10,
-			captions: captions(),
+			captions: captions(10),
 		});
 		const layout = layoutOf([video, next], { transitionType: "fade" });
 		const [first, last] = layout.series;

@@ -9,10 +9,9 @@ export type ResolvedCaptions = {
 	/** Where `words` start in the clip's own word list, past those the trim cut. */
 	firstWord: number;
 	words: TextTimestamp[];
+	/** When, from the clip's start, its captions stop. */
+	untilSec: number;
 };
-
-/** Captions on the timeline stop `untilSec` after their clip starts. */
-export type LaidOutCaptions = ResolvedCaptions & { untilSec: number };
 
 export type ResolvedElement = {
 	id: string;
@@ -36,26 +35,17 @@ export type ResolvedElement = {
 	captions?: ResolvedCaptions;
 };
 
-export type LaidOutElement = Omit<ResolvedElement, "captions"> & {
-	captions?: LaidOutCaptions;
-};
-
-export type Sequence<E = LaidOutElement> = {
-	element: E;
+export type Sequence = {
+	element: ResolvedElement;
 	start: number;
 	duration: number;
 	/** A scene says how long the overlays under it run; it holds at least that long. */
 	overlaySec?: number;
 };
 
-/** A sequence before the caption rule lays out its captions. */
-export type DraftSequence = Sequence<ResolvedElement>;
-
-export type SequenceMap<S = Sequence> = Partial<Record<ContentType, S[]>>;
-
 export type RenderLayout = {
 	series: Sequence[];
-	sequences: SequenceMap;
+	sequences: Partial<Record<ContentType, Sequence[]>>;
 	fps: number;
 	width: number;
 	height: number;

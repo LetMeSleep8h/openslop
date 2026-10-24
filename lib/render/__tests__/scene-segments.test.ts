@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { toFrames } from "../frames";
-import type { LaidOutElement, Sequence, RenderLayout } from "../types";
+import type { ResolvedElement, Sequence, RenderLayout } from "../types";
 import { DEFAULT_CAPTION_STYLE } from "@/lib/captions/caption-style";
 import {
 	buildSceneSegments,
@@ -101,7 +101,7 @@ describe("findSegmentIndexAtFrame", () => {
 const resolved = (
 	url: string,
 	scene = { id: "s1", number: 1 },
-): LaidOutElement => ({
+): ResolvedElement => ({
 	id: `${url}-el`,
 	type: "image",
 	role: "foreground",
@@ -122,7 +122,7 @@ const resolved = (
 const sequence = (
 	start: number,
 	duration: number,
-	element: LaidOutElement,
+	element: ResolvedElement,
 ): Sequence => ({ element, start, duration });
 
 const layout = (

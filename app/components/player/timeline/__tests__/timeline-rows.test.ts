@@ -219,7 +219,7 @@ describe("buildCaptionRows", () => {
 		end: at + 1,
 	}));
 	const narration = el("n", "narration", {
-		captions: { firstWord: 0, words },
+		captions: { firstWord: 0, words, untilSec: 4 },
 	});
 	const twoPerLine = (...elements: ResolvedElement[]) => {
 		const layout = layoutOf(elements);

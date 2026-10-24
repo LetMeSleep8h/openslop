@@ -269,10 +269,11 @@ describe("resolveElements", () => {
 		const resolveOne = (element: ContentElement, captionsEnabled = true) =>
 			resolveElements([wrap([element])], bySnapshot, { captionsEnabled })[0];
 
-		it("captions a clip with the words on its own result", () => {
+		it("captions a clip with the words on its own result, until the clip ends", () => {
 			expect(resolveOne(makeElement("vid", "video")).captions).toEqual({
 				firstWord: 0,
 				words: heard,
+				untilSec: 5,
 			});
 		});
 

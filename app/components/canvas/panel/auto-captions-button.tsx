@@ -1,14 +1,12 @@
 "use client";
 
+import uniqBy from "lodash/uniqBy";
 import { useMemo } from "react";
-import { useSlateStatic } from "slate-react";
 import { Button } from "@/components/ui/button";
 import { MagicCaptions } from "@/components/ui/icon";
 import { captionsNodeId } from "@/lib/captions/captions-job";
-import { getCanvasElements } from "@/lib/canvas/assets";
-import { isCaptionable } from "@/lib/canvas/types";
+import { isCaptionable, type ElementRef } from "@/lib/canvas/types";
 import { plural } from "@/lib/format";
-import { generatedById } from "@/lib/generation/generation-graph";
 import {
 	useGenerationQueue,
 	useQueueSelector,
@@ -19,9 +17,10 @@ import { layoutSequences } from "@/lib/render/sequences";
 import { useLayout } from "@/app/components/player/render-layout-context";
 import { useTranscribeClips } from "../hooks/use-clip-captions";
 
-const uncaptioned = (queue: GenerationQueue, ids: string[]) =>
-	ids.filter(
-		(id) => queue.getElementSnapshot(id).result?.textTimestamps === undefined,
+const uncaptioned = (queue: GenerationQueue, clips: ElementRef[]) =>
+	clips.filter(
+		({ id }) =>
+			queue.getElementSnapshot(id).result?.textTimestamps === undefined,
 	);
 
 function describe(active: boolean, pending: number, captionable: number) {
@@ -33,36 +32,26 @@ function describe(active: boolean, pending: number, captionable: number) {
 
 /** Transcribes every clip on the timeline that has no words yet. */
 export function AutoCaptionsButton() {
-	const editor = useSlateStatic();
 	const queue = useGenerationQueue();
 	const { layout } = useLayout();
 	const transcribe = useTranscribeClips();
 
 	const captionable = useMemo(
-		() => [
-			...new Set(
+		() =>
+			uniqBy(
 				layoutSequences(layout)
-					.filter(({ element }) => isCaptionable(element.type))
-					.map(({ element }) => element.id),
+					.map(({ element }) => element)
+					.filter(({ type }) => isCaptionable(type)),
+				"id",
 			),
-		],
 		[layout],
 	);
 	const pending = useQueueSelector((q) => uncaptioned(q, captionable).length);
 	const active = useQueueSelector((q) =>
-		captionable.some((id) =>
+		captionable.some(({ id }) =>
 			isGenerationActive(q.getElementSnapshot(captionsNodeId(id)).status),
 		),
 	);
-
-	const captionAll = () => {
-		const canvas = getCanvasElements(editor.children);
-		transcribe(
-			uncaptioned(queue, captionable).flatMap(
-				(id) => generatedById(canvas, id) ?? [],
-			),
-		);
-	};
 
 	return (
 		<Button
@@ -71,7 +60,7 @@ export function AutoCaptionsButton() {
 			className="w-full"
 			tooltip={describe(active, pending, captionable.length)}
 			unavailable={active || pending === 0}
-			onClick={captionAll}
+			onClick={() => transcribe(uncaptioned(queue, captionable))}
 		>
 			<MagicCaptions aria-hidden="true" />
 			Auto captions

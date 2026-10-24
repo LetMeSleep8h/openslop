@@ -1,4 +1,4 @@
-import type { GeneratedElement } from "@/lib/canvas/types";
+import type { ElementRef } from "@/lib/canvas/types";
 import type { AssetResult, ModelRef } from "@/lib/connectors/types";
 import type { GenerationNode, NodeId } from "@/lib/generation/graph";
 import type { GenerationQueue } from "@/lib/generation/queue";
@@ -17,7 +17,7 @@ const soundOf = (take: AssetResult) => take.videoUrl ?? take.audioUrl;
 
 /** Transcribes the take `clip` holds now, so captioning never remakes the clip. */
 export function captionsNode(
-	clip: Pick<GeneratedElement, "id" | "type">,
+	clip: ElementRef,
 	take: AssetResult,
 	model: ModelRef,
 ): GenerationNode {

@@ -136,6 +136,9 @@ export type AssetType = keyof typeof ASSET_TYPES;
 
 export type ElementType = ContentType | AssetType;
 
+/** Enough of an element to address its generation: which one, and what kind. */
+export type ElementRef = { id: string; type: ElementType };
+
 export const ELEMENT_TYPES: Record<ElementType, ElementSpec> = {
 	...CONTENT_TYPES,
 	...ASSET_TYPES,

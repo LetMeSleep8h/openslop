@@ -5,9 +5,7 @@ export const BLANK_SCENE_ID = "blank";
 const BLACK_PIXEL =
 	"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR42mNgYGAAAAAEAAHI6uv5AAAAAElFTkSuQmCC";
 
-export function blankScene(
-	opener: ResolvedElement,
-): Omit<ResolvedElement, "captions"> {
+export function blankScene(opener: ResolvedElement): ResolvedElement {
 	return {
 		id: BLANK_SCENE_ID,
 		type: "image",

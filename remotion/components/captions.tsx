@@ -16,7 +16,7 @@ import {
 	type CaptionStyle,
 } from "@/lib/captions/caption-style";
 import { toFrames, toSeconds } from "@/lib/render/frames";
-import type { LaidOutCaptions } from "@/lib/render/types";
+import type { ResolvedCaptions } from "@/lib/render/types";
 
 // Caption styling applies to every caption in the composition, so it rides a
 // provider rather than threading through the sequence layers that never read it.
@@ -65,7 +65,7 @@ export function Captions({
 	captions,
 	clip,
 }: {
-	captions: LaidOutCaptions;
+	captions: ResolvedCaptions;
 	clip: Clip;
 }) {
 	const style = useCaptionStyle();

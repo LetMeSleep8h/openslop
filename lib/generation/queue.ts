@@ -1,4 +1,4 @@
-import type { ElementType } from "@/lib/canvas/types";
+import type { ElementRef } from "@/lib/canvas/types";
 import type { AssetConnectorType, AssetResult } from "../connectors/types";
 import { errorMessage } from "../errors";
 import { createEmitter } from "../store/emitter";
@@ -130,7 +130,7 @@ export class GenerationQueue {
 
 	/** An edit keeps the inputs of the result it edits, so it goes stale with it. */
 	reviseResult(
-		{ id: elementId, type: elementType }: { id: string; type: ElementType },
+		{ id: elementId, type: elementType }: ElementRef,
 		revise: (result: AssetResult) => AssetResult,
 	): void {
 		const { result, resultInputs, connectorType, pinned } =

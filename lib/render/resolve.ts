@@ -21,11 +21,15 @@ import { elementTrim, trimTimestamps } from "./clip-trim";
 function resolveCaptions(
 	element: ContentElement,
 	{ textTimestamps }: AssetResult,
-	trimStartSec: number,
+	{ trimStartSec, durationSec }: { trimStartSec: number; durationSec: number },
 ): ResolvedCaptions | undefined {
 	if (!isCaptionable(element.type) || !textTimestamps?.length) return undefined;
 	const words = trimTimestamps(textTimestamps, trimStartSec);
-	return { firstWord: textTimestamps.length - words.length, words };
+	return {
+		firstWord: textTimestamps.length - words.length,
+		words,
+		untilSec: durationSec,
+	};
 }
 
 export function resolveElements(
@@ -67,7 +71,7 @@ export function resolveElements(
 				volume: getVolume(element),
 				motion: getMotion(element),
 				captions: captionsEnabled
-					? resolveCaptions(element, snapshot.result, trim.trimStartSec)
+					? resolveCaptions(element, snapshot.result, trim)
 					: undefined,
 			});
 		}

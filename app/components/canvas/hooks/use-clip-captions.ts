@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import { useSlateStatic } from "slate-react";
 import { captionsNode, captionsNodeId } from "@/lib/captions/captions-job";
 import { removeCaptions, resetCaptions } from "@/lib/captions/caption-edits";
-import type { GeneratedElement } from "@/lib/canvas/types";
+import type { ElementRef, GeneratedElement } from "@/lib/canvas/types";
 import { resolveModel } from "@/lib/connectors/models";
 import type { AssetResult } from "@/lib/connectors/types";
 import {
@@ -15,7 +15,7 @@ export function useTranscribeClips() {
 	const queue = useGenerationQueue();
 	const editor = useSlateStatic();
 	return useCallback(
-		(clips: GeneratedElement[]) => {
+		(clips: ElementRef[]) => {
 			const model = resolveModel(
 				"transcript",
 				editor.defaultModels().transcript,

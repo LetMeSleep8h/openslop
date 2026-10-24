@@ -1,12 +1,9 @@
-import type { Sequence, SequenceMap } from "./types";
+import type { RenderLayout, Sequence } from "./types";
 
-export const layoutSequences = <S>({
+export const layoutSequences = ({
 	series,
 	sequences,
-}: {
-	series: S[];
-	sequences: SequenceMap<S>;
-}): S[] => [
+}: Pick<RenderLayout, "series" | "sequences">): Sequence[] => [
 	...series,
 	...Object.values(sequences).flatMap((list) => list ?? []),
 ];

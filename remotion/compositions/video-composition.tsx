@@ -10,11 +10,7 @@ import {
 	useVideoConfig,
 } from "remotion";
 import { linearTiming, TransitionSeries } from "@remotion/transitions";
-import type {
-	LaidOutElement,
-	RenderLayout,
-	ResolvedElement,
-} from "@/lib/render/types";
+import type { RenderLayout, ResolvedElement } from "@/lib/render/types";
 import { playedSec } from "@/lib/render/clip-trim";
 import { toFrames } from "@/lib/render/frames";
 import {
@@ -106,7 +102,7 @@ function ElementMedia({ element }: { element: ResolvedElement }) {
 	}
 }
 
-function SequenceContent({ element }: { element: LaidOutElement }) {
+function SequenceContent({ element }: { element: ResolvedElement }) {
 	return (
 		<>
 			<ElementMedia element={element} />

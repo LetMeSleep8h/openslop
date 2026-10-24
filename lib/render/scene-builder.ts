@@ -1,8 +1,7 @@
 import {
 	DEFAULT_CONFIG,
-	type DraftSequence,
 	type ResolvedElement,
-	type SequenceMap,
+	type Sequence,
 	type VideoConfig,
 	type RenderLayout,
 } from "./types";
@@ -30,11 +29,13 @@ function createSequence(
 	element: ResolvedElement,
 	start: number,
 	duration: number,
-): DraftSequence {
+): Sequence {
 	return { element, start, duration: Math.max(duration, MIN_DURATION_SEC) };
 }
 
-type SceneSequence = DraftSequence & { overlaySec: number };
+type SequenceMap = RenderLayout["sequences"];
+
+type SceneSequence = Sequence & { overlaySec: number };
 
 /**
  * Lays down `element.loops` copies, each `stride` after the last. A stride
@@ -42,7 +43,7 @@ type SceneSequence = DraftSequence & { overlaySec: number };
  * across its seam rather than cutting.
  */
 function pushSequence(
-	sequences: SequenceMap<DraftSequence>,
+	sequences: SequenceMap,
 	element: ResolvedElement,
 	start: number,
 	stride: number,
@@ -53,17 +54,14 @@ function pushSequence(
 	}
 }
 
-function trimSequencesAt(list: DraftSequence[] | undefined, cutoff: number) {
+function trimSequencesAt(list: Sequence[] | undefined, cutoff: number) {
 	if (!list) return;
 	while (list.length > 0 && list[list.length - 1].start >= cutoff) list.pop();
 	const last = list.at(-1);
 	if (last) last.duration = Math.min(last.duration, cutoff - last.start);
 }
 
-function getForegroundCursor(
-	current: DraftSequence | undefined,
-	cursor: number,
-) {
+function getForegroundCursor(current: Sequence | undefined, cursor: number) {
 	return current ? Math.max(cursor, current.start + current.duration) : cursor;
 }
 
@@ -95,7 +93,7 @@ export function buildRenderLayout(
 		toSeconds(toFrames(sec, config.fps), config.fps);
 	const transitionDurationSec = onGrid(transitionOverlapSec(transitionType));
 	const series: SceneSequence[] = [];
-	const sequences: SequenceMap<DraftSequence> = {};
+	const sequences: SequenceMap = {};
 	let cursor = 0;
 
 	for (const raw of elements) {
