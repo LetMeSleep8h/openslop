@@ -3,7 +3,11 @@ import { CONTENT_TYPES, type ContentType } from "@/lib/canvas/types";
 import { isBlankScene } from "@/lib/render/blank-scene";
 import type { ResolvedElement } from "@/lib/render/types";
 import { layoutOf } from "@/lib/render/__tests__/_layout";
-import { buildTimelineRows, packLanes } from "../timeline-rows";
+import {
+	buildCaptionLanes,
+	buildTimelineRows,
+	packLanes,
+} from "../timeline-rows";
 
 function el(
 	id: string,
@@ -205,5 +209,48 @@ describe("buildTimelineRows", () => {
 		expect(isBlankScene(visual?.clips[0].element as ResolvedElement)).toBe(
 			true,
 		);
+	});
+});
+
+describe("buildCaptionLanes", () => {
+	const words = ["one", "two", "three"].map((text, at) => ({
+		text,
+		start: at,
+		end: at + 1,
+	}));
+	const narration = el("n", "narration", {
+		captions: { ownerId: "n", firstWord: 0, words },
+	});
+
+	it("lays one clip per line, each held until the next begins or the clip ends", () => {
+		const [lane] = buildCaptionLanes(
+			layoutOf([el("a", "image"), narration]),
+			2,
+		);
+		expect(
+			lane.map(({ start, duration, text }) => ({ start, duration, text })),
+		).toEqual([
+			{ start: 0, duration: 2, text: "one two" },
+			{ start: 2, duration: 2, text: "three" },
+		]);
+	});
+
+	it("leaves out the lines a louder clip's captions cover", () => {
+		const yielding = el("n", "narration", {
+			captions: { ownerId: "n", firstWord: 0, words, yieldSec: [[0, 2]] },
+		});
+		const [lane] = buildCaptionLanes(layoutOf([el("a", "image"), yielding]), 2);
+		expect(lane.map(({ text }) => text)).toEqual(["three"]);
+	});
+
+	it("cuts a line around the span a louder clip's captions take", () => {
+		const yielding = el("n", "narration", {
+			captions: { ownerId: "n", firstWord: 0, words, yieldSec: [[1, 3]] },
+		});
+		const [lane] = buildCaptionLanes(layoutOf([el("a", "image"), yielding]), 2);
+		expect(lane.map(({ start, duration }) => [start, duration])).toEqual([
+			[0, 1],
+			[3, 1],
+		]);
 	});
 });

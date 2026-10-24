@@ -46,16 +46,13 @@ export function GenerateButton({
 	hasResult,
 	disabled,
 	onGenerate,
-	label = generateLabel(status, hasResult),
-	tooltip = hasResult ? "Regenerate this element" : "Generate this element",
 }: {
 	status: GenerationStatus;
 	hasResult: boolean;
 	disabled: boolean;
 	onGenerate: () => void;
-	label?: string;
-	tooltip?: string;
 }) {
+	const label = generateLabel(status, hasResult);
 	return (
 		<Button
 			type="button"
@@ -66,7 +63,7 @@ export function GenerateButton({
 			onMouseDown={(e) => e.preventDefault()}
 			onClick={onGenerate}
 			aria-label={label}
-			tooltip={tooltip}
+			tooltip={hasResult ? "Regenerate this element" : "Generate this element"}
 		>
 			{GENERATE_ICON[status]}
 			{label}

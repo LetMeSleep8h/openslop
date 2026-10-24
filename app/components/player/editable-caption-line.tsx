@@ -6,7 +6,7 @@ import {
 	CaptionOverlay,
 	captionWordStyle,
 } from "@/components/captions/caption-overlay";
-import { reviseWords } from "@/lib/captions/revise-words";
+import { editCaptions } from "@/lib/captions/revise-words";
 import { isGenerationActive } from "@/lib/generation/snapshots";
 import {
 	useGenerationQueue,
@@ -47,14 +47,9 @@ function EditableCaptionLine({
 	const save = (value: string) => {
 		setDraft(null);
 		if (cancelled.current || value.trim() === text) return;
-		queue.reviseResult(ownerId, (result) => {
-			if (!result.textTimestamps)
-				throw new Error("This result has no captions");
-			return {
-				...result,
-				textTimestamps: reviseWords(result.textTimestamps, from, to, value),
-			};
-		});
+		queue.reviseResult(ownerId, (result) =>
+			editCaptions(result, from, to, value),
+		);
 	};
 
 	if (draft === null)

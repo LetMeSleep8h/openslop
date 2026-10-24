@@ -62,9 +62,13 @@ describe("resolveElements", () => {
 			}),
 		};
 
-		const resolved = resolveElements([wrap(elements)], (id) => snapshots[id], {
-			captionsEnabled: true,
-		});
+		const resolved = resolveElements(
+			[wrap(elements)],
+			(id) => snapshots[id] ?? makeSnapshot({ result: null }),
+			{
+				captionsEnabled: true,
+			},
+		);
 
 		expect(resolved).toHaveLength(2);
 		expect(resolved[0]).toEqual({
@@ -115,9 +119,13 @@ describe("resolveElements", () => {
 			nar1: makeSnapshot({ status: "idle", result: null }),
 		};
 
-		const resolved = resolveElements([wrap(elements)], (id) => snapshots[id], {
-			captionsEnabled: true,
-		});
+		const resolved = resolveElements(
+			[wrap(elements)],
+			(id) => snapshots[id] ?? makeSnapshot({ result: null }),
+			{
+				captionsEnabled: true,
+			},
+		);
 		expect(resolved).toHaveLength(1);
 		expect(resolved[0].id).toBe("img1");
 	});
@@ -242,13 +250,16 @@ describe("resolveElements", () => {
 
 	describe("captions", () => {
 		const elements = [makeElement("nar1", "narration")];
-		const withTimestamps = () =>
+		const withTimestamps = (id: string) =>
 			makeSnapshot({
-				result: {
-					audioUrl: "https://example.com/nar.mp3",
-					durationSec: 8,
-					textTimestamps: [{ text: "hello", start: 0, end: 1 }],
-				},
+				result:
+					id === "nar1"
+						? {
+								audioUrl: "https://example.com/nar.mp3",
+								durationSec: 8,
+								textTimestamps: [{ text: "hello", start: 0, end: 1 }],
+							}
+						: null,
 			});
 
 		it("attaches speech's own words when captions are enabled project-wide", () => {
@@ -309,6 +320,26 @@ describe("resolveElements", () => {
 			expect(video.captions?.words).toEqual([
 				{ text: "two", start: 0.5, end: 1.5 },
 			]);
+		});
+
+		it("captions a clip with its own words until it is transcribed", () => {
+			const own = [{ text: "said", start: 0, end: 1 }];
+			const clip = makeSnapshot({
+				result: { videoUrl: "v.mp4", durationSec: 5, textTimestamps: own },
+			});
+			const captionsOf = (transcribed: boolean) =>
+				resolveElements(
+					[wrap([makeElement("vid", "video")])],
+					(id) =>
+						id === "vid"
+							? clip
+							: transcribed
+								? bySnapshot(id)
+								: makeSnapshot({ result: null }),
+					{ captionsEnabled: true },
+				)[0].captions;
+			expect(captionsOf(false)).toMatchObject({ ownerId: "vid", words: own });
+			expect(captionsOf(true)?.ownerId).toBe("vid:captions");
 		});
 
 		it("captions nothing a clip has no words for", () => {

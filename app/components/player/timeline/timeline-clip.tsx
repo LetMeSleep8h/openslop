@@ -1,10 +1,11 @@
-import type { IconComponent } from "@/components/ui/icon";
+import { CaptionsFill, type IconComponent } from "@/components/ui/icon";
 import { MediaWithSkeleton } from "@/lib/components/media-with-skeleton";
 import { ELEMENT_CONFIGS } from "@/app/components/canvas/elements/element-configs";
 import { sceneLabel } from "@/lib/canvas/constants";
 import { truncateMiddle } from "@/lib/format";
 import { isTrimmable, playedSec, type Trim } from "@/lib/render/clip-trim";
 import { formatTimeRange } from "@/lib/render/timestamps";
+import type { ContentType } from "@/lib/canvas/types";
 import type { ResolvedElement } from "@/lib/render/types";
 import { cn } from "@/lib/utils";
 import { ClipWaveform } from "./clip-waveform";
@@ -79,10 +80,12 @@ function ClipHeader({
 	icon: Icon,
 	label,
 	width,
+	captioned,
 }: {
 	icon: IconComponent;
 	label: string;
 	width: number;
+	captioned: boolean;
 }) {
 	return (
 		<span className="relative z-10 flex h-3.5 shrink-0 items-center gap-1 px-1">
@@ -90,6 +93,9 @@ function ClipHeader({
 			<span dir="auto" className="truncate text-badge-xs text-foreground">
 				{fit(label, width)}
 			</span>
+			{captioned ? (
+				<CaptionsFill size={HEADER_ICON_SIZE} className="ml-auto shrink-0" />
+			) : null}
 		</span>
 	);
 }
@@ -119,6 +125,7 @@ export function TimelineClip({
 	const accessibleLabel = [
 		sceneNumber && sceneLabel(sceneNumber),
 		config.label,
+		element.captions && "captioned",
 		range,
 	]
 		.filter(Boolean)
@@ -139,6 +146,7 @@ export function TimelineClip({
 				icon={config.Icon}
 				label={label || config.label}
 				width={width}
+				captioned={Boolean(element.captions)}
 			/>
 			<div className="flex min-h-0 flex-1">
 				{config.layer === "audio" ? (
@@ -173,6 +181,26 @@ export function TimelineClip({
 				</span>
 			) : null}
 			{selected ? <SelectedWash /> : null}
+		</div>
+	);
+}
+
+export function TimelineCaptionClip({
+	text,
+	type,
+}: {
+	text: string;
+	type: ContentType;
+}) {
+	return (
+		<div
+			className={cn(
+				FRAME,
+				"timeline-clip-surface justify-center border-border px-1",
+				ELEMENT_CONFIGS[type].colorClass,
+			)}
+		>
+			<span className="truncate text-badge-xs text-foreground">{text}</span>
 		</div>
 	);
 }

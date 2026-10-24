@@ -1,13 +1,13 @@
 import {
 	CONTENT_TYPES,
-	captionSource,
+	hasCaptions,
 	type CanvasBlock,
 	type ContentElement,
 } from "@/lib/canvas/types";
 import { isScene } from "@/lib/canvas/scenes";
 import { getPromptText } from "@/lib/generation/inputs";
 import { getPrimaryUrl } from "@/lib/connectors/asset-url";
-import { derivedNodeId } from "@/lib/generation/graph";
+import { captionsOwnerId } from "@/lib/captions/captions-owner";
 import type { ElementSnapshot } from "@/lib/generation/snapshots";
 import type { ResolvedCaptions, ResolvedElement } from "./types";
 import {
@@ -18,16 +18,13 @@ import {
 } from "../canvas/element-attributes";
 import { elementTrim, trimTimestamps } from "./clip-trim";
 
-/** Speech holds its own words; anything transcribed holds them on its derived captions node. */
 function resolveCaptions(
 	element: ContentElement,
 	getSnapshot: (id: string) => ElementSnapshot,
 	trimStartSec: number,
 ): ResolvedCaptions | undefined {
-	const source = captionSource(element.type);
-	if (!source) return undefined;
-	const ownerId =
-		source === "voice" ? element.id : derivedNodeId(element.id, "captions");
+	if (!hasCaptions(element.type)) return undefined;
+	const ownerId = captionsOwnerId(element.id, (id) => getSnapshot(id).result);
 	const timestamps = getSnapshot(ownerId).result?.textTimestamps;
 	if (!timestamps?.length) return undefined;
 	const words = trimTimestamps(timestamps, trimStartSec);

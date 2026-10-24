@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
 	activeWordIndex,
 	captionLineAt,
+	captionLines,
 	captionWordsAt,
 } from "../caption-layout";
 
@@ -88,5 +89,22 @@ describe("captionLineAt with typed lines", () => {
 	it("ends untouched lines where the next typed line starts", () => {
 		const ids = [undefined, undefined, undefined, undefined, 9, 9];
 		expect(captionLineAt(ids.length, 3, 3, ids)).toEqual({ start: 3, end: 4 });
+	});
+});
+
+describe("captionLines", () => {
+	it("splits words into the lines the player shows, keeping a typed line whole", () => {
+		const words: { text: string; line?: number }[] = [
+			...WORDS.map((text) => ({ text })),
+			{ text: "a", line: 9 },
+			{ text: "typed", line: 9 },
+			{ text: "line", line: 9 },
+		];
+		expect(captionLines(words, 2).map(text)).toEqual([
+			["one", "two"],
+			["three", "four"],
+			["five"],
+			["a", "typed", "line"],
+		]);
 	});
 });

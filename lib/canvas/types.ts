@@ -11,16 +11,14 @@ export type ElementRole = "foreground" | "background" | "overlay" | "effect";
 
 export type LayerType = "audio" | "visual";
 
-/** Where a clip's caption words come from: its own speech, or a transcript of its sound. */
-export type CaptionSource = "voice" | "transcript";
-
 /** The presentation-free facts about a content type. Its look lives in the canvas's `elementConfigs`. */
 export type ContentSpec = {
 	connector: AssetConnectorType;
 	outputKind: ResultKind;
 	role: ElementRole;
 	layer: LayerType;
-	captions?: CaptionSource;
+	/** Its clips can carry captions, see `captionsOwnerId`. */
+	captions?: true;
 };
 
 export const CONTENT_TYPES = {
@@ -29,14 +27,14 @@ export const CONTENT_TYPES = {
 		outputKind: "audio",
 		role: "overlay",
 		layer: "audio",
-		captions: "voice",
+		captions: true,
 	},
 	character: {
 		connector: "tts",
 		outputKind: "audio",
 		role: "overlay",
 		layer: "audio",
-		captions: "voice",
+		captions: true,
 	},
 	image: {
 		connector: "image",
@@ -49,7 +47,7 @@ export const CONTENT_TYPES = {
 		outputKind: "video",
 		role: "foreground",
 		layer: "visual",
-		captions: "transcript",
+		captions: true,
 	},
 	sound: {
 		connector: "sfx",
@@ -62,15 +60,15 @@ export const CONTENT_TYPES = {
 		outputKind: "audio",
 		role: "background",
 		layer: "audio",
-		captions: "transcript",
+		captions: true,
 	},
 } as const satisfies Record<string, ContentSpec>;
 
 export type ContentType = keyof typeof CONTENT_TYPES;
 
-export function captionSource(type: ContentType): CaptionSource | undefined {
+export function hasCaptions(type: ContentType): boolean {
 	const spec: ContentSpec = CONTENT_TYPES[type];
-	return spec.captions;
+	return Boolean(spec.captions);
 }
 
 const ALL_CONTENT_TYPES = Object.keys(CONTENT_TYPES) as ContentType[];

@@ -67,3 +67,18 @@ export function wordsOnLine(
 		hidden: reveal === "word" && index > activeInLine,
 	}));
 }
+
+/** Every line the words fall into, in order, as the player shows them. */
+export function captionLines<T extends { line?: number }>(
+	words: readonly T[],
+	maxWordsPerLine: number,
+): T[][] {
+	const lineIds = words.map(({ line }) => line);
+	const lines: T[][] = [];
+	for (let at = 0; at < words.length; ) {
+		const { end } = captionLineAt(words.length, at, maxWordsPerLine, lineIds);
+		lines.push(words.slice(at, end));
+		at = end;
+	}
+	return lines;
+}

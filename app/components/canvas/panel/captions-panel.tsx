@@ -26,13 +26,18 @@ import {
 import { useCaptionStyle } from "@/lib/captions/use-caption-style";
 import { useProject } from "@/lib/project/use-project";
 import { useVideoSetting } from "@/lib/project/use-video-setting";
+import { ModelDefaultControl } from "@/app/components/models/model-default-control";
+import { groupFor } from "@/lib/connectors/model-groups";
+import { useModelChain } from "@/lib/connectors/use-default-models";
 import { CaptionFontLibrary } from "../caption-fonts";
-import { CaptionAllButton } from "./caption-all-button";
+import { AutoCaptionsButton } from "./auto-captions-button";
 import { CaptionFontField } from "./caption-font-field";
 import { CaptionPresetGrid } from "./caption-preset-grid";
 import { CaptionPreview } from "./caption-preview";
 import { CaptionTextStyleFields } from "./caption-text-style-fields";
 import { PanelCard, PanelField } from "./panel-card";
+
+const VOICE = groupFor("transcript");
 
 const REVEAL_OPTIONS: MediaToggleOption<CaptionReveal>[] = [
 	{ value: "line", label: "Whole line at once", text: "Line" },
@@ -61,13 +66,12 @@ export function CaptionsPanel() {
 	const captionsEnabled = useVideoSetting("captions");
 	const updateVideoSettings = useProject((state) => state.updateVideoSettings);
 	const [style, setStyle] = useCaptionStyle();
+	const chain = useModelChain();
+	const updateModels = useProject((state) => state.updateModels);
 
 	return (
 		<>
-			<PanelCard
-				title="Captions"
-				action={captionsEnabled && <CaptionAllButton />}
-			>
+			<PanelCard title="Captions">
 				<PanelField label="Show">
 					<MediaToggle
 						value={captionsEnabled ? "on" : "off"}
@@ -80,7 +84,24 @@ export function CaptionsPanel() {
 						]}
 					/>
 				</PanelField>
-				{captionsEnabled && <CaptionPreview style={style} />}
+				{captionsEnabled && (
+					<>
+						<PanelField
+							label="Voice model"
+							info="Auto captions transcribe speech with the voice model's provider."
+						>
+							<ModelDefaultControl
+								types={VOICE.types}
+								tier="project"
+								chain={chain}
+								label={VOICE.label}
+								onChange={updateModels}
+							/>
+						</PanelField>
+						<AutoCaptionsButton />
+						<CaptionPreview style={style} />
+					</>
+				)}
 			</PanelCard>
 
 			{captionsEnabled && (

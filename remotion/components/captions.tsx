@@ -11,6 +11,7 @@ import {
 	captionFontSizePx,
 	type CaptionStyle,
 } from "@/lib/captions/caption-style";
+import { yieldsAt } from "@/lib/render/caption-yields";
 import { toSeconds } from "@/lib/render/frames";
 import type { ResolvedCaptions } from "@/lib/render/types";
 
@@ -41,8 +42,7 @@ export function Captions({
 	);
 
 	const seconds = toSeconds(frame, fps);
-	if (yieldSec.some(([from, to]) => seconds >= from && seconds < to))
-		return null;
+	if (yieldsAt(yieldSec, seconds)) return null;
 
 	const index = activeWordIndex(startTimes, seconds);
 	const line = captionLineAt(

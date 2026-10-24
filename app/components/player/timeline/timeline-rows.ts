@@ -5,7 +5,10 @@ import {
 	Waveform,
 	type IconComponent,
 } from "@/components/ui/icon";
-import type { ElementRole, LayerType } from "@/lib/canvas/types";
+import { captionLines } from "@/lib/captions/caption-layout";
+import type { ContentType, ElementRole, LayerType } from "@/lib/canvas/types";
+import { shownSpans } from "@/lib/render/caption-yields";
+import { layoutSequences } from "@/lib/render/scene-builder";
 import type { Sequence, RenderLayout } from "@/lib/render/types";
 
 export type TimelineClip = Sequence & { key: string };
@@ -62,8 +65,11 @@ function sequencesForRole(layout: RenderLayout, role: ElementRole): Sequence[] {
  * a scene boundary runs into its neighbour by the cross-fade without ever
  * really playing over it.
  */
-export function packLanes(clips: Sequence[], toleranceSec = 0): Sequence[][] {
-	const lanes: Sequence[][] = [];
+export function packLanes<T extends Pick<Sequence, "start" | "duration">>(
+	clips: T[],
+	toleranceSec = 0,
+): T[][] {
+	const lanes: T[][] = [];
 	for (const clip of clips) {
 		const lane = lanes.find((candidate) => {
 			const last = candidate[candidate.length - 1];
@@ -105,4 +111,59 @@ export function buildTimelineRows(layout: RenderLayout): TimelineRow[] {
 			})),
 		}));
 	});
+}
+
+export type CaptionClip = {
+	key: string;
+	start: number;
+	duration: number;
+	text: string;
+	/** The clip the words belong to, which tints the line. */
+	type: ContentType;
+};
+
+/** One clip per caption line, held until the next line, around the spans it yields and the transition out. */
+function linesOf(
+	{ element, start, duration }: Sequence,
+	{
+		maxWordsPerLine,
+		transitionSec,
+	}: { maxWordsPerLine: number; transitionSec: number },
+): CaptionClip[] {
+	const { captions } = element;
+	if (!captions) return [];
+	const shownUntil = duration - transitionSec;
+	const lines = captionLines(captions.words, maxWordsPerLine);
+	return lines.flatMap((words, index) => {
+		const until = Math.min(
+			lines[index + 1]?.[0].start ?? shownUntil,
+			shownUntil,
+		);
+		const text = words.map((word) => word.text).join(" ");
+		return shownSpans(words[0].start, until, captions.yieldSec ?? []).map(
+			([from, to]) => ({
+				key: `${element.id}-${start}-${from}`,
+				start: start + from,
+				duration: to - from,
+				text,
+				type: element.type,
+			}),
+		);
+	});
+}
+
+export function buildCaptionLanes(
+	layout: RenderLayout,
+	maxWordsPerLine: number,
+): CaptionClip[][] {
+	const clips = layoutSequences(layout)
+		.flatMap((sequence) =>
+			linesOf(sequence, {
+				maxWordsPerLine,
+				transitionSec: layout.transitionDurationSec,
+			}),
+		)
+		.filter(({ start }) => start < layout.totalDurationSec)
+		.sort((a, b) => a.start - b.start);
+	return packLanes(clips);
 }

@@ -2,6 +2,7 @@
 
 import { useMemo, useRef, useState, type ReactNode } from "react";
 import {
+	Captions,
 	RotateCcw,
 	Timeline as TimelineIcon,
 	ZoomIn,
@@ -10,20 +11,23 @@ import {
 import { TooltipIconButton } from "@/components/ui/icon-button";
 import { useElementWidth } from "@/lib/components/use-element-width";
 import { renderCharacterRefs } from "@/lib/connectors/character-refs";
-import type { LayerType } from "@/lib/canvas/types";
 import { toFrames } from "@/lib/render/frames";
+import { formatTime } from "@/lib/render/timestamps";
+import { useProject } from "@/lib/project/use-project";
 import { clamp, cn } from "@/lib/utils";
 import { usePlayerControl } from "../player-control-context";
 import { usePlayerScrub } from "../use-player-scrub";
 import { useSelectScene } from "../use-select-scene";
 import { useLayout } from "../render-layout-context";
-import { TimelineClip } from "./timeline-clip";
+import { TimelineCaptionClip, TimelineClip } from "./timeline-clip";
 import { TimelineHoverHead, type HoverHeadHandle } from "./timeline-hover-head";
 import { TimelinePlayhead } from "./timeline-playhead";
 import { GUTTER_PX, LANE_HEIGHT, RULER_HEIGHT } from "../dock-layout";
 import { TimelineRuler } from "./timeline-ruler";
 import {
+	buildCaptionLanes,
 	buildTimelineRows,
+	type CaptionClip,
 	type TimelineClip as TimelineClipData,
 	type TimelineRow,
 } from "./timeline-rows";
@@ -44,7 +48,7 @@ function Lane({
 	className,
 	children,
 }: {
-	kind: LayerType;
+	kind: keyof typeof LANE_HEIGHT;
 	className?: string;
 	children: ReactNode;
 }) {
@@ -142,6 +146,42 @@ function Track({
 	);
 }
 
+function CaptionTrack({
+	clips,
+	pxPerSec,
+	onSeek,
+}: {
+	clips: CaptionClip[];
+	pxPerSec: number;
+	onSeek: (seconds: number) => void;
+}) {
+	return (
+		<Lane kind="captions" className="relative">
+			<ul aria-label="Captions" className="absolute inset-0">
+				{clips.map(({ key, start, duration, text, type }) => (
+					<li
+						key={key}
+						className="absolute inset-y-0.5"
+						style={{
+							left: start * pxPerSec,
+							width: Math.max(duration * pxPerSec, MIN_CLIP_WIDTH_PX),
+						}}
+					>
+						<button
+							type="button"
+							aria-label={`Caption at ${formatTime(start)}: ${text}`}
+							onClick={() => onSeek(start)}
+							className="block h-full w-full rounded-md focus-ring"
+						>
+							<TimelineCaptionClip text={text} type={type} />
+						</button>
+					</li>
+				))}
+			</ul>
+		</Lane>
+	);
+}
+
 function TimelineEmpty() {
 	return (
 		<div className="flex flex-1 flex-col items-center justify-center gap-1.5 text-muted-foreground">
@@ -165,6 +205,13 @@ export function Timeline() {
 		width: viewportWidth,
 	} = useElementWidth<HTMLDivElement>();
 	const rows = useMemo(() => buildTimelineRows(layout), [layout]);
+	const maxWordsPerLine = useProject(
+		(s) => s.videoSettings.captionStyle.maxWordsPerLine,
+	);
+	const captionLanes = useMemo(
+		() => buildCaptionLanes(layout, maxWordsPerLine),
+		[layout, maxWordsPerLine],
+	);
 	const { zoom, pxPerSec, zoomIn, zoomOut, canZoomIn, canZoomOut } =
 		useTimelineZoom(
 			layout.totalDurationSec,
@@ -257,6 +304,14 @@ export function Timeline() {
 					</div>
 
 					<div style={{ gridArea: "2 / 2" }}>
+						{captionLanes.map((clips, index) => (
+							<CaptionTrack
+								key={index}
+								clips={clips}
+								pxPerSec={pxPerSec}
+								onSeek={seek}
+							/>
+						))}
 						{rows.map((row) => (
 							<Track
 								key={row.key}
@@ -287,6 +342,15 @@ export function Timeline() {
 						style={{ gridArea: "2 / 1" }}
 						className="sticky left-0 z-30 border-r border-border bg-element-card"
 					>
+						{captionLanes.map((_, index) => (
+							<Lane
+								key={index}
+								kind="captions"
+								className="flex items-center justify-center text-muted-foreground"
+							>
+								<Captions size={14} />
+							</Lane>
+						))}
 						{rows.map((row) => (
 							<Lane
 								key={row.key}

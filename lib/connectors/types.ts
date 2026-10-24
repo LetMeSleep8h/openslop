@@ -147,6 +147,8 @@ export const AssetResultSchema = z.object({
 	audioUrl: z.string().optional(),
 	videoUrl: z.string().optional(),
 	textTimestamps: z.array(TextTimestampSchema).optional(),
+	/** The words as generated, kept once the user edits them. */
+	generatedTextTimestamps: z.array(TextTimestampSchema).optional(),
 	voiceId: z.string().optional(),
 });
 

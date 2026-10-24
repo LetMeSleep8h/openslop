@@ -37,3 +37,22 @@ export function applyCaptionYields(sequences: Sequence[]): void {
 			};
 	}
 }
+
+export const yieldsAt = (yieldSec: [number, number][], seconds: number) =>
+	yieldSec.some(([from, to]) => seconds >= from && seconds < to);
+
+/** The parts of `[from, to)` a clip's captions show, around the spans they yield. */
+export function shownSpans(
+	from: number,
+	to: number,
+	yieldSec: [number, number][],
+): [number, number][] {
+	const spans: [number, number][] = [];
+	let at = from;
+	for (const [start, end] of yieldSec.toSorted(([a], [b]) => a - b)) {
+		if (start > at) spans.push([at, Math.min(start, to)]);
+		at = Math.max(at, end);
+	}
+	if (to > at) spans.push([at, to]);
+	return spans.filter(([start, end]) => end > start);
+}
